@@ -15,13 +15,15 @@ class OneUIView extends StatefulWidget {
     this.useOneUITextStyle = true,
     this.collapsedHeight = kToolbarHeight,
     this.expandedHeight,
+    this.expandedHeightRatio,
     this.actionSpacing,
     this.backgroundColor,
-    this.children,
+    this.child,
     this.slivers,
     this.globalKey,
     this.initCollapsed = false,
-  })  : assert(children != null || slivers != null),
+  })  : assert(child != null || slivers != null),
+        assert(expandedHeight == null || expandedHeightRatio == null),
         super(key: key);
 
   /// The text to display on expanded app bar.
@@ -41,17 +43,27 @@ class OneUIView extends StatefulWidget {
 
   /// The size of the app bar when it is fully expanded.
   ///
+  /// {@template oneui.view.expandedHeight}
   /// This height should be big
   /// enough to accommodate whatever that widget contains.
   ///
   /// This does not include the status bar height (which will be automatically
   /// included if [primary] is true).
   ///
+  /// Either [expandedHeight] or [expandedHeightRatio] must be null.
+  ///
   /// | Ratation  | Phone                                 | Tablet                                |
   /// |-----------|---------------------------------------|---------------------------------------|
   /// | Portrait  | 0.3976 * [MediaQueryData.size.height] | 0.1878 * [MediaQueryData.size.height] |
   /// | Landscape | [collapsedHeight]                     | 0.1878 * [MediaQueryData.size.height] |
+  /// {@endtemplate}
   final double? expandedHeight;
+
+  /// The ratio of the app bar
+  /// to screen height when it is fully expanded.
+  ///
+  /// {@macro oneui.view.expandedHeight}
+  final double? expandedHeightRatio;
 
   /// Defines the height of the app bar when it is collapsed.
   ///
@@ -71,10 +83,12 @@ class OneUIView extends StatefulWidget {
   /// The background color for app bar.
   final Color? backgroundColor;
 
-  /// The slivers to place inside the viewport.
-  final List<Widget>? children;
+  /// The widget below this widget in the tree.
+  /// One of [child] and [slivers] must be null and the other must not be null.
+  final Widget? child;
 
   /// The slivers to place inside the viewport.
+  /// One of [child] and [slivers] must be null and the other must not be null.
   final List<Widget>? slivers;
 
   /// If true, display a default collapsed app bar.
@@ -95,11 +109,14 @@ class _OneUIViewState extends State<OneUIView> {
 
   double get expandedHeight {
     final Size size = MediaQuery.of(context).size;
-    return size.width > 600
-        ? size.height > 600
-            ? _kTabletExpandedAppBarHeightFactor * size.height
-            : collapsedHeight
-        : _kPhoneExpandedAppBarHeightFactor * size.height;
+    return widget.expandedHeight ??
+        (widget.expandedHeightRatio != null
+            ? widget.expandedHeightRatio! * size.height
+            : (size.width > 600
+                ? size.height > 600
+                    ? _kTabletExpandedAppBarHeightFactor * size.height
+                    : collapsedHeight
+                : _kPhoneExpandedAppBarHeightFactor * size.height));
   }
 
   double get collapsedHeight => widget.collapsedHeight;
@@ -250,18 +267,9 @@ class _OneUIViewState extends State<OneUIView> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> slivers = widget.slivers ??
-        [
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (BuildContext context, int index) {
-                return widget.children!.elementAt(index);
-              },
-              childCount: widget.children!.length,
-            ),
-          ),
-        ];
-    final Widget body = SafeArea(
+    final Widget _child =
+        widget.child ?? CustomScrollView(slivers: widget.slivers!);
+    final Widget _body = SafeArea(
       top: false,
       bottom: false,
       child: Padding(
@@ -270,9 +278,7 @@ class _OneUIViewState extends State<OneUIView> {
           builder: (BuildContext context) {
             return ClipRRect(
               borderRadius: _kRadius,
-              child: CustomScrollView(
-                slivers: slivers,
-              ),
+              child: _child,
             );
           },
         ),
@@ -286,7 +292,7 @@ class _OneUIViewState extends State<OneUIView> {
           key: _nestedScrollViewStateKey,
           physics: OneUIScrollPhysics(expandedHeight),
           headerSliverBuilder: _appBar,
-          body: body,
+          body: _body,
         ),
       ),
     );

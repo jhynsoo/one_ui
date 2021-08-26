@@ -427,8 +427,8 @@ class _OneUIAppBarState extends State<OneUIAppBar> {
             theme.primaryColor
         : widget.backgroundColor ?? appBarTheme.backgroundColor;
 
-    final Color? foregroundColor = widget.foregroundColor ??
-        appBarTheme.foregroundColor;
+    final Color? foregroundColor =
+        widget.foregroundColor ?? appBarTheme.foregroundColor;
 
     IconThemeData overallIconTheme = backwardsCompatibility
         ? widget.iconTheme ?? appBarTheme.iconTheme ?? theme.primaryIconTheme

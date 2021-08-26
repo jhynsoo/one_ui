@@ -6,3 +6,8 @@
 
 * Add example
 * Update OneUIView
+
+## 0.2.0
+
+* Add expandedHeight to OneUIView
+* Change children to child in OneUIView

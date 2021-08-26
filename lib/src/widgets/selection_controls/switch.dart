@@ -54,10 +54,10 @@ class OneUISwitch extends StatefulWidget {
         super(key: key);
 
   /// Whether this switch is on or off.
-  /// 
+  ///
   /// This property must not be null.
   final bool value;
-  
+
   /// Called when the user toggles the switch on or off.
   ///
   /// The switch passes the new value to the callback but does not actually
@@ -72,10 +72,10 @@ class OneUISwitch extends StatefulWidget {
   final ValueChanged<bool>? onChanged;
 
   /// If true, set [activeColor] as `Color(0xff3e91ff)`.
-  /// 
+  ///
   /// Must not be null. Defaults to false.
   final bool useOneUIColor;
-  
+
   /// The color to use when this switch is on.
   ///
   /// Defaults to [ThemeData.toggleableActiveColor].
@@ -84,11 +84,12 @@ class OneUISwitch extends StatefulWidget {
   ///  Else if [trackColor] returns a non-null color in the [MaterialState.selected]
   /// state, it will be used instead of this color.
   final Color? activeColor;
+
   /// The color to use on the thumb when this switch is off.
-  /// 
+  ///
   /// Defaults to `Color(0xff828282)` if `Theme.of(context).brightness == Brightness.dark`, otherwise `Color(0xfffafafa)`.
   final Color? disabledThumbColor;
-  
+
   /// An image to use on the thumb of this switch when the switch is on.
   final ImageProvider? activeThumbImage;
 
@@ -150,7 +151,7 @@ class OneUISwitch extends StatefulWidget {
   ///  * [MaterialState.hovered].
   ///  * [MaterialState.focused].
   ///  * [MaterialState.disabled].
-  /// 
+  ///
   /// null, then the following colors are used:
   ///
   /// | State    | Light theme         | Dark theme       |
@@ -167,7 +168,7 @@ class OneUISwitch extends StatefulWidget {
   ///  * [MaterialState.hovered].
   ///  * [MaterialState.focused].
   ///  * [MaterialState.disabled].
-  /// 
+  ///
   /// null, then the following colors are used:
   ///
   /// | State    | Light theme          | Dark theme           |
@@ -183,7 +184,7 @@ class OneUISwitch extends StatefulWidget {
   /// used. If that is also null, then the value of
   /// [ThemeData.materialTapTargetSize] is used.
   final MaterialTapTargetSize? materialTapTargetSize;
-  
+
   /// {@macro flutter.cupertino.CupertinoSwitch.dragStartBehavior}
   final DragStartBehavior dragStartBehavior;
 
@@ -307,7 +308,7 @@ class _OneUISwitchState extends State<OneUISwitch>
     return MaterialStateProperty.resolveWith((Set<MaterialState> states) {
       if (states.contains(MaterialState.disabled)) {
         return widget.disabledThumbColor ??
-            (isDark ? Color(0xff828282) : Color(0xfffafafa));
+            (isDark ? const Color(0xff828282) : const Color(0xfffafafa));
       }
       return Colors.white;
     });
@@ -325,7 +326,7 @@ class _OneUISwitchState extends State<OneUISwitch>
       }
       if (states.contains(MaterialState.selected)) {
         return widget.useOneUIColor
-            ? Color(0xff3e91ff)
+            ? const Color(0xff3e91ff)
             : widget.activeColor ?? Theme.of(context).toggleableActiveColor;
       }
       return Colors.transparent;
@@ -343,7 +344,7 @@ class _OneUISwitchState extends State<OneUISwitch>
       }
       if (states.contains(MaterialState.selected)) {
         return widget.useOneUIColor
-            ? Color(0xff3e91ff)
+            ? const Color(0xff3e91ff)
             : widget.activeColor ?? Theme.of(context).toggleableActiveColor;
       }
       return isDark ? Colors.white30 : black32;
@@ -703,8 +704,7 @@ class _SwitchPainter extends ToggleablePainter {
         shape: BoxShape.circle,
         border: Border.all(
           color: borderColor,
-        )
-        );
+        ));
   }
 
   bool _isPainting = false;
@@ -786,11 +786,11 @@ class _SwitchPainter extends ToggleablePainter {
     try {
       _isPainting = true;
       if (_cachedThumbPainter == null ||
-      value != _cachedValue ||
+          value != _cachedValue ||
           thumbColor != _cachedThumbColor ||
           thumbImage != _cachedThumbImage ||
           thumbErrorListener != _cachedThumbErrorListener) {
-            _cachedValue = value;
+        _cachedValue = value;
         _cachedThumbColor = thumbColor;
         _cachedThumbImage = thumbImage;
         _cachedThumbErrorListener = thumbErrorListener;

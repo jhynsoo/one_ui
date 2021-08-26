@@ -186,7 +186,7 @@ class OneUISlider extends StatefulWidget {
     properties.add(IntProperty('divisions', divisions));
     properties.add(StringProperty('label', label));
     properties.add(ColorProperty(
-        'activeColor', useOneUIColor ? Color(0xff0381fe) : activeColor));
+        'activeColor', useOneUIColor ? const Color(0xff0381fe) : activeColor));
     properties.add(ColorProperty('inactiveColor', inactiveColor));
     properties.add(ObjectFlagProperty<ValueChanged<double>>.has(
         'semanticFormatterCallback', semanticFormatterCallback));
@@ -415,7 +415,7 @@ class _SliderState extends State<OneUISlider> with TickerProviderStateMixin {
               theme.colorScheme.surface.withOpacity(0.90));
     } else {
       valueIndicatorColor = widget.useOneUIColor
-          ? Color(0xff0381fe)
+          ? const Color(0xff0381fe)
           : widget.activeColor ??
               sliderTheme.valueIndicatorColor ??
               theme.colorScheme.primary;
@@ -424,21 +424,21 @@ class _SliderState extends State<OneUISlider> with TickerProviderStateMixin {
     sliderTheme = sliderTheme.copyWith(
       trackHeight: sliderTheme.trackHeight ?? _defaultTrackHeight,
       activeTrackColor: widget.useOneUIColor
-          ? Color(0xff0381fe)
+          ? const Color(0xff0381fe)
           : widget.activeColor ??
               sliderTheme.activeTrackColor ??
               theme.colorScheme.primary,
       inactiveTrackColor: widget.useOneUIColor
-          ? Color(0xff0381fe).withOpacity(0.24)
+          ? const Color(0xff0381fe).withOpacity(0.24)
           : widget.inactiveColor ??
               sliderTheme.inactiveTrackColor ??
               theme.colorScheme.primary.withOpacity(0.24),
       disabledActiveTrackColor: widget.useOneUIColor
-          ? Color(0xffd2d2d2)
+          ? const Color(0xffd2d2d2)
           : sliderTheme.disabledActiveTrackColor ??
               theme.colorScheme.onSurface.withOpacity(0.32),
       disabledInactiveTrackColor: widget.useOneUIColor
-          ? Color(0xff0381fe).withOpacity(0.24)
+          ? const Color(0xff0381fe).withOpacity(0.24)
           : sliderTheme.disabledInactiveTrackColor ??
               theme.colorScheme.primary.withOpacity(0.24),
       activeTickMarkColor: widget.inactiveColor ??
@@ -453,12 +453,12 @@ class _SliderState extends State<OneUISlider> with TickerProviderStateMixin {
           sliderTheme.disabledInactiveTickMarkColor ??
               theme.colorScheme.onSurface.withOpacity(0.12),
       thumbColor: widget.useOneUIColor
-          ? Color(0xff0381fe)
+          ? const Color(0xff0381fe)
           : widget.activeColor ??
               sliderTheme.thumbColor ??
               theme.colorScheme.primary,
       disabledThumbColor: widget.useOneUIColor
-          ? Color(0xffd2d2d2)
+          ? const Color(0xffd2d2d2)
           : sliderTheme.disabledThumbColor ??
               Color.alphaBlend(theme.colorScheme.onSurface.withOpacity(.38),
                   theme.colorScheme.surface),
@@ -756,7 +756,7 @@ class _RenderSlider extends RenderBox with RelayoutWhenSystemFontsChangeMixin {
   double get value => _value;
   double _value;
   set value(double newValue) {
-    assert(newValue != null && newValue >= 0.0 && newValue <= 1.0);
+    assert(newValue >= 0.0 && newValue <= 1.0);
     final double convertedValue = isDiscrete ? _discretize(newValue) : newValue;
     if (convertedValue == _value) {
       return;
@@ -885,7 +885,6 @@ class _RenderSlider extends RenderBox with RelayoutWhenSystemFontsChangeMixin {
   TextDirection get textDirection => _textDirection;
   TextDirection _textDirection;
   set textDirection(TextDirection value) {
-    assert(value != null);
     if (value == _textDirection) {
       return;
     }

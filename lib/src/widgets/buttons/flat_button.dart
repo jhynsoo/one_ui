@@ -46,6 +46,7 @@ class OneUIFlatButton extends TextButton {
       textStyle: theme.textTheme.button,
       padding: scaledPadding,
       minimumSize: const Size(64, 36),
+      maximumSize: Size.infinite,
       side: null,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(18))),

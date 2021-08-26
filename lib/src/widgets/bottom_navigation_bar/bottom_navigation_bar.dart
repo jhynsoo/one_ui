@@ -8,7 +8,7 @@ import 'package:one_ui/src/widgets/bottom_navigation_bar/bottom_navigation_bar_i
 import 'package:vector_math/vector_math_64.dart' show Vector3;
 
 class OneUIBottomNavigationBar extends StatefulWidget {
-  OneUIBottomNavigationBar({
+  const OneUIBottomNavigationBar({
     Key? key,
     required this.items,
     this.onTap,
@@ -118,8 +118,6 @@ class _OneUIBottomNavigationTile extends StatelessWidget {
   final bool enableFeedback;
   @override
   Widget build(BuildContext context) {
-    final double selectedFontSize = selectedLabelStyle.fontSize!;
-
     return Expanded(
       child: Semantics(
         selected: selected,

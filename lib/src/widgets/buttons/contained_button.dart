@@ -3,7 +3,7 @@ import 'package:flutter/rendering.dart';
 import 'package:one_ui/src/effects/ink_ripple.dart';
 
 class OneUIContainedButton extends ElevatedButton {
-  OneUIContainedButton({
+  const OneUIContainedButton({
     Key? key,
     required VoidCallback? onPressed,
     VoidCallback? onLongPress,
@@ -47,6 +47,7 @@ class OneUIContainedButton extends ElevatedButton {
       textStyle: theme.textTheme.button,
       padding: scaledPadding,
       minimumSize: const Size(64, 36),
+      maximumSize: Size.infinite,
       side: null,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(18))),

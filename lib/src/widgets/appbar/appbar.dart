@@ -219,8 +219,7 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   /// [Brightness.dark], [SystemUiOverlayStyle.light] is used and fo
   /// [Brightness.light], [SystemUiOverlayStyle.dark] is used.
   ///
-  /// If this value is null then [AppBarTheme.brightness] is used
-  /// and if that's null then overall theme's brightness is used.
+  /// If this value is null then overall theme's brightness is used.
   ///
   /// The AppBar is built within a `AnnotatedRegion<SystemUiOverlayStyle>`
   /// which causes [SystemChrome.setSystemUIOverlayStyle] to be called
@@ -256,8 +255,7 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   /// The typographic styles to use for text in the app bar. Typically this is
   /// set along with [brightness] [backgroundColor], [iconTheme].
   ///
-  /// If this property is null, then [AppBarTheme.textTheme] of
-  /// [ThemeData.appBarTheme] is used. If that is also null, then
+  /// If this property is null, then
   /// [ThemeData.primaryTextTheme] is used.
   /// {@endtemplate}
   final TextTheme? textTheme;
@@ -340,9 +338,8 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   /// [iconTheme], [actionsIconTheme] properties, and the original use of
   /// the [textTheme] and [brightness] properties.
   ///
-  /// If this property is null, then [AppBarTheme.backwardsCompatibility] of
-  /// [ThemeData.appBarTheme] is used. If that is also null, the default
-  /// value is true.
+  /// If this property is null, the default
+  /// value is false.
   ///
   /// This is a temporary property. When setting it to false is no
   /// longer considered a breaking change, it will be depreacted and
@@ -394,7 +391,7 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
 }
 
 class _OneUIAppBarState extends State<OneUIAppBar> {
-  static const double _defaultElevation = 4.0;
+  static const double _defaultElevation = .0;
   static const Color _defaultShadowColor = Color(0xFF000000);
 
   void _handleDrawerButton() {
@@ -422,25 +419,16 @@ class _OneUIAppBarState extends State<OneUIAppBar> {
         parentRoute is PageRoute<dynamic> && parentRoute.fullscreenDialog;
 
     final double toolbarHeight = widget.toolbarHeight ?? kToolbarHeight;
-    final bool backwardsCompatibility = widget.backwardsCompatibility ??
-        appBarTheme.backwardsCompatibility ??
-        true;
+    final bool backwardsCompatibility = widget.backwardsCompatibility ?? false;
 
-    final Color backgroundColor = backwardsCompatibility
+    final Color? backgroundColor = backwardsCompatibility
         ? widget.backgroundColor ??
             appBarTheme.backgroundColor ??
             theme.primaryColor
-        : widget.backgroundColor ??
-            appBarTheme.backgroundColor ??
-            (colorScheme.brightness == Brightness.dark
-                ? colorScheme.surface
-                : colorScheme.primary);
+        : widget.backgroundColor ?? appBarTheme.backgroundColor;
 
-    final Color foregroundColor = widget.foregroundColor ??
-        appBarTheme.foregroundColor ??
-        (colorScheme.brightness == Brightness.dark
-            ? colorScheme.onSurface
-            : colorScheme.onPrimary);
+    final Color? foregroundColor = widget.foregroundColor ??
+        appBarTheme.foregroundColor;
 
     IconThemeData overallIconTheme = backwardsCompatibility
         ? widget.iconTheme ?? appBarTheme.iconTheme ?? theme.primaryIconTheme
@@ -454,7 +442,7 @@ class _OneUIAppBarState extends State<OneUIAppBar> {
 
     TextStyle? toolbarTextStyle = backwardsCompatibility
         ? widget.textTheme?.bodyText2 ??
-            appBarTheme.textTheme?.bodyText2 ??
+            appBarTheme.toolbarTextStyle ??
             theme.primaryTextTheme.bodyText2
         : widget.toolbarTextStyle ??
             appBarTheme.toolbarTextStyle ??
@@ -462,7 +450,7 @@ class _OneUIAppBarState extends State<OneUIAppBar> {
 
     TextStyle? titleTextStyle = backwardsCompatibility
         ? widget.textTheme?.headline6 ??
-            appBarTheme.textTheme?.headline6 ??
+            appBarTheme.titleTextStyle ??
             theme.primaryTextTheme.headline6
         : widget.titleTextStyle ??
             appBarTheme.titleTextStyle ??
@@ -472,12 +460,14 @@ class _OneUIAppBarState extends State<OneUIAppBar> {
       final double opacity =
           const Interval(0.25, 1.0, curve: Curves.fastOutSlowIn)
               .transform(widget.toolbarOpacity);
-      if (titleTextStyle?.color != null)
+      if (titleTextStyle?.color != null) {
         titleTextStyle = titleTextStyle!
             .copyWith(color: titleTextStyle.color!.withOpacity(opacity));
-      if (toolbarTextStyle?.color != null)
+      }
+      if (toolbarTextStyle?.color != null) {
         toolbarTextStyle = toolbarTextStyle!
             .copyWith(color: toolbarTextStyle.color!.withOpacity(opacity));
+      }
       overallIconTheme = overallIconTheme.copyWith(
         opacity: opacity * (overallIconTheme.opacity ?? 1.0),
       );
@@ -495,9 +485,10 @@ class _OneUIAppBarState extends State<OneUIAppBar> {
           tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
         );
       } else {
-        if (!hasEndDrawer && canPop)
+        if (!hasEndDrawer && canPop) {
           leading =
               useCloseButton ? const CloseButton() : const OneUIBackButton();
+        }
       }
     }
     if (leading != null) {
@@ -663,7 +654,7 @@ class _OneUIAppBarState extends State<OneUIAppBar> {
     }
 
     final Brightness overlayStyleBrightness =
-        widget.brightness ?? appBarTheme.brightness ?? colorScheme.brightness;
+        widget.brightness ?? colorScheme.brightness;
     final SystemUiOverlayStyle overlayStyle = backwardsCompatibility
         ? (overlayStyleBrightness == Brightness.dark
             ? SystemUiOverlayStyle.light

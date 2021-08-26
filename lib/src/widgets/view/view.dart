@@ -4,7 +4,7 @@ import 'package:one_ui/src/widgets/appbar/appbar.dart';
 
 const double _kPhoneExpandedAppBarHeightFactor = 0.3976;
 const double _kTabletExpandedAppBarHeightFactor = 0.1878;
-const BorderRadius _kRadius = const BorderRadius.all(Radius.circular(26.0));
+const BorderRadius _kRadius = BorderRadius.all(Radius.circular(26.0));
 
 class OneUIView extends StatefulWidget {
   const OneUIView({
@@ -46,7 +46,7 @@ class OneUIView extends StatefulWidget {
   ///
   /// This does not include the status bar height (which will be automatically
   /// included if [primary] is true).
-  /// 
+  ///
   /// | Ratation  | Phone                                 | Tablet                                |
   /// |-----------|---------------------------------------|---------------------------------------|
   /// | Portrait  | 0.3976 * [MediaQueryData.size.height] | 0.1878 * [MediaQueryData.size.height] |
@@ -108,14 +108,14 @@ class _OneUIViewState extends State<OneUIView> {
   void initState() {
     super.initState();
     _nestedScrollViewStateKey = widget.globalKey ?? GlobalKey();
-    if (widget.initCollapsed)
+    if (widget.initCollapsed) {
       Future.microtask(() {
         final scrollViewState = _nestedScrollViewStateKey!.currentState;
-        print(scrollViewState);
         final outerController = scrollViewState!.outerController;
 
         outerController.jumpTo(expandedHeight - collapsedHeight);
       });
+    }
   }
 
   void _snapAppBar(ScrollController controller, double snapOffset) async {
@@ -129,10 +129,12 @@ class _OneUIViewState extends State<OneUIView> {
   }
 
   bool _onNotification(ScrollNotification notification) {
-    if (notification is ScrollEndNotification)
+    if (notification is ScrollEndNotification) {
       return _onEndNotification(notification);
-    if (notification is ScrollStartNotification)
+    }
+    if (notification is ScrollStartNotification) {
       return _onStartNotification(notification);
+    }
     return false;
   }
 
@@ -167,7 +169,7 @@ class _OneUIViewState extends State<OneUIView> {
 
   Widget _expandedTitle(Animation<double> animation) {
     Widget largeTitle = widget.largeTitle ?? widget.title;
-    if (widget.useOneUITextStyle)
+    if (widget.useOneUITextStyle) {
       largeTitle = DefaultTextStyle(
         style: Theme.of(context).textTheme.headline6!.copyWith(
               fontWeight: FontWeight.w300,
@@ -176,13 +178,14 @@ class _OneUIViewState extends State<OneUIView> {
         softWrap: false,
         child: largeTitle,
       );
+    }
 
     return Expanded(
       child: FadeTransition(
         opacity: Tween(begin: 0.0, end: 1.0).animate(
           CurvedAnimation(
             parent: animation,
-            curve: Interval(0.4, 1.0, curve: Curves.easeIn),
+            curve: const Interval(0.4, 1.0, curve: Curves.easeIn),
           ),
         ),
         child: Center(
@@ -198,13 +201,12 @@ class _OneUIViewState extends State<OneUIView> {
       child: SizedBox(
         height: collapsedHeight,
         child: OneUIAppBar(
-          titleSpacing: 0.0,
           backwardsCompatibility: false,
           title: FadeTransition(
             opacity: Tween(begin: 1.0, end: 0.0).animate(
               CurvedAnimation(
                 parent: animation,
-                curve: Interval(0.0, 0.6, curve: Curves.easeIn),
+                curve: const Interval(0.0, 0.6, curve: Curves.easeIn),
               ),
             ),
             child: widget.title,
@@ -224,7 +226,8 @@ class _OneUIViewState extends State<OneUIView> {
           pinned: true,
           floating: true,
           automaticallyImplyLeading: false,
-          backgroundColor: widget.backgroundColor,
+          backgroundColor: widget.backgroundColor ??
+              Theme.of(context).scaffoldBackgroundColor,
           expandedHeight: expandedHeight,
           toolbarHeight: collapsedHeight,
           elevation: 0,

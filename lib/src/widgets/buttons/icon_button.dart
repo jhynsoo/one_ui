@@ -28,7 +28,7 @@ class OneUIIconButton extends IconButton {
     bool enableFeedback = true,
     BoxConstraints? constraints,
     required Widget icon,
-  })   : assert(splashRadius == null || splashRadius > 0),
+  })  : assert(splashRadius == null || splashRadius > 0),
         super(
           key: key,
           iconSize: iconSize,
@@ -57,10 +57,11 @@ class OneUIIconButton extends IconButton {
     assert(debugCheckHasMaterial(context));
     final ThemeData theme = Theme.of(context);
     Color? currentColor;
-    if (onPressed != null)
+    if (onPressed != null) {
       currentColor = color;
-    else
+    } else {
       currentColor = disabledColor ?? theme.disabledColor;
+    }
 
     final VisualDensity effectiveVisualDensity =
         visualDensity ?? theme.visualDensity;

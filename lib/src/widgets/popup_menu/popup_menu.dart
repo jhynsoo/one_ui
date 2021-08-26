@@ -13,7 +13,7 @@ const double _kMenuMinWidth = 2.5 * _kMenuWidthStep;
 const double _kMenuVerticalPadding = 8.0;
 const double _kMenuWidthStep = 56.0;
 const double _kMenuScreenPadding = 8.0;
-const BorderRadius _kRadius = const BorderRadius.all(Radius.circular(26.0));
+const BorderRadius _kRadius = BorderRadius.all(Radius.circular(26.0));
 
 /// An item in a One UI design popup menu.
 ///
@@ -54,6 +54,7 @@ class OneUIPopupMenuItem<T> extends PopupMenuEntry<T> {
   /// The minimum height of the menu item.
   ///
   /// Defaults to 40.0.
+  @override
   final double height;
 
   /// The padding of the menu item.
@@ -366,8 +367,9 @@ class _PopupMenuRouteLayout extends SingleChildLayoutDelegate {
     double y = position.top;
     if (selectedItemIndex != null) {
       double selectedItemOffset = _kMenuVerticalPadding;
-      for (int index = 0; index < selectedItemIndex!; index += 1)
+      for (int index = 0; index < selectedItemIndex!; index += 1) {
         selectedItemOffset += itemSizes[index]!.height;
+      }
       selectedItemOffset += itemSizes[selectedItemIndex!]!.height / 2;
       y = position.top +
           (size.height - position.top - position.bottom) / 2.0 -
@@ -396,14 +398,16 @@ class _PopupMenuRouteLayout extends SingleChildLayoutDelegate {
 
     // Avoid going outside an area defined as the rectangle 8.0 pixels from the
     // edge of the screen in every direction.
-    if (x < _kMenuScreenPadding)
+    if (x < _kMenuScreenPadding) {
       x = _kMenuScreenPadding;
-    else if (x + childSize.width > size.width - _kMenuScreenPadding)
+    } else if (x + childSize.width > size.width - _kMenuScreenPadding) {
       x = size.width - childSize.width - _kMenuScreenPadding;
-    if (y < _kMenuScreenPadding)
+    }
+    if (y < _kMenuScreenPadding) {
       y = _kMenuScreenPadding;
-    else if (y + childSize.height > size.height - _kMenuScreenPadding)
+    } else if (y + childSize.height > size.height - _kMenuScreenPadding) {
       y = size.height - childSize.height - _kMenuScreenPadding;
+    }
     return Offset(x, y);
   }
 
@@ -759,7 +763,7 @@ class _OneUIPopupMenuButtonState<T> extends State<OneUIPopupMenuButton<T>> {
 
     assert(debugCheckHasMaterialLocalizations(context));
 
-    if (widget.child != null)
+    if (widget.child != null) {
       return Tooltip(
         message:
             widget.tooltip ?? MaterialLocalizations.of(context).showMenuTooltip,
@@ -770,12 +774,13 @@ class _OneUIPopupMenuButtonState<T> extends State<OneUIPopupMenuButton<T>> {
           enableFeedback: enableFeedback,
         ),
       );
+    }
 
     return OneUIIconButton(
       splashRadius: 16,
       iconSize: 20,
       onPressed: widget.enabled ? showButtonMenu : null,
-      icon: widget.icon ?? Icon(Icons.more_vert),
+      icon: widget.icon ?? const Icon(Icons.more_vert),
     );
   }
 }

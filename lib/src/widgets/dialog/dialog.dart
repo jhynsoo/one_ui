@@ -191,7 +191,8 @@ class OneUIDialog extends StatelessWidget {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final DialogTheme dialogTheme = DialogTheme.of(context);
     final MediaQueryData mediaQuery = MediaQuery.of(context);
-    final EdgeInsets effectivePadding = mediaQuery.viewInsets + (insetPadding ?? EdgeInsets.zero);
+    final EdgeInsets effectivePadding =
+        mediaQuery.viewInsets + (insetPadding ?? EdgeInsets.zero);
     final double constraintsFactor =
         mediaQuery.orientation == Orientation.portrait
             ? mediaQuery.size.width > 600
@@ -214,18 +215,19 @@ class OneUIDialog extends StatelessWidget {
         removeBottom: true,
         context: context,
         child: Align(
-          alignment: Alignment(0.0, 0.95),
+          alignment: const Alignment(0.0, 0.95),
           child: ConstrainedBox(
             constraints: dialogConstraints,
             child: Material(
               color: useOneUITheme
                   ? isDark
-                      ? Color(0xff252525)
-                      : Color(0xfffcfcfc)
+                      ? const Color(0xff252525)
+                      : const Color(0xfffcfcfc)
                   : backgroundColor ??
                       dialogTheme.backgroundColor ??
                       Theme.of(context).dialogBackgroundColor,
-              elevation: elevation ?? dialogTheme.elevation ?? _defaultElevation,
+              elevation:
+                  elevation ?? dialogTheme.elevation ?? _defaultElevation,
               shape: useOneUITheme
                   ? _defaultDialogShape
                   : shape ?? dialogTheme.shape ?? _defaultDialogShape,
@@ -501,7 +503,7 @@ class OneUIAlertDialog extends StatelessWidget {
         );
         actionsChildren.addAll([
           actionWidget,
-          SizedBox(
+          const SizedBox(
             height: 16,
             child: VerticalDivider(
               width: 12.0,
@@ -554,7 +556,7 @@ class OneUIAlertDialog extends StatelessWidget {
       ),
     );
 
-    if (label != null)
+    if (label != null) {
       dialogChild = Semantics(
         scopesRoute: true,
         explicitChildNodes: true,
@@ -562,6 +564,7 @@ class OneUIAlertDialog extends StatelessWidget {
         label: label,
         child: dialogChild,
       );
+    }
 
     return OneUIDialog(
       backgroundColor: backgroundColor,

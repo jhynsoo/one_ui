@@ -276,8 +276,9 @@ class _OneUIBottomNavigationBarState extends State<OneUIBottomNavigationBar>
 
   @override
   void dispose() {
-    for (final AnimationController controller in _controllers)
+    for (final AnimationController controller in _controllers) {
       controller.dispose();
+    }
     super.dispose();
   }
 

@@ -5,7 +5,7 @@ Unofficial implementation of Samsung One UI for [Flutter](https://flutter.dev).
 ## Resources
 
 - [Samsung Developers | One UI Design Guidelines](https://developer.samsung.com/one-ui/index.html)
-- [Samsung Desing | One UI Design Guidelines](https://design.samsung.com/global/contents/one-ui/download/oneui_design_guide_eng.pdf)
+- [Samsung Design | One UI Design Guidelines](https://design.samsung.com/global/contents/one-ui/download/oneui_design_guide_eng.pdf)
 
 ## Widgets
 
@@ -184,7 +184,7 @@ Widget build(BuildContext context) {
         ],
       ),
     ],
-    children: body,
+    child: body,
   );
 }
 ```

@@ -218,6 +218,7 @@ class _OneUIViewState extends State<OneUIView> {
       child: SizedBox(
         height: collapsedHeight,
         child: OneUIAppBar(
+          backgroundColor: widget.backgroundColor,
           backwardsCompatibility: false,
           title: FadeTransition(
             opacity: Tween(begin: 1.0, end: 0.0).animate(

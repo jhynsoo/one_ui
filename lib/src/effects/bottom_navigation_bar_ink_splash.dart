@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 const Duration _kUnconfirmedSplashDuration = kThemeAnimationDuration;
 const Duration _kSplashFadeDuration = kRadialReactionDuration;
+const Duration _kReverseSplashFadeDuration = const Duration(milliseconds: 350);
 
 const double _kSplashConfirmedVelocity = 1.0; // logical pixels per millisecond
 
@@ -78,17 +79,20 @@ class OneUIBottomNavigationBarSplash extends InteractiveInkFeature {
             color: color,
             onRemoved: onRemoved) {
     _scaleController = AnimationController(
-        duration: _kUnconfirmedSplashDuration, vsync: controller.vsync)
+      duration: _kUnconfirmedSplashDuration,
+      vsync: controller.vsync,
+    )
       ..addListener(controller.markNeedsPaint)
       ..forward();
-    _scale = _scaleController.drive(Tween<double>(begin: .8, end: 1.0));
+    _scale = _scaleController.drive(Tween<double>(begin: .9, end: 1.0));
     _alphaController = AnimationController(
-        duration: _kSplashFadeDuration, vsync: controller.vsync)
+      duration: _kSplashFadeDuration,
+      reverseDuration: _kReverseSplashFadeDuration,
+      vsync: controller.vsync,
+    )
       ..addListener(controller.markNeedsPaint)
       ..forward();
     _alpha = _alphaController.drive(IntTween(
-      // begin: color.alpha,
-      // end: 0,
       begin: 0,
       end: color.alpha,
     ));

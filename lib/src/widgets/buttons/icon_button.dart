@@ -115,7 +115,7 @@ class OneUIIconButton extends IconButton {
         child: result,
         focusColor: focusColor ?? theme.focusColor,
         hoverColor: hoverColor ?? theme.hoverColor,
-        highlightColor: highlightColor ?? theme.highlightColor,
+        highlightColor: highlightColor ?? Colors.transparent,
         splashColor: splashColor ?? theme.splashColor,
         splashFactory: OneUIInkRipple.splashFactory,
         radius: splashRadius ??

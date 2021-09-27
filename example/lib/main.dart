@@ -30,82 +30,94 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     List<Widget> _widgetOption = [
-      ListView(
-        children: [
-          ListTile(
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => const ButtonPage(),
-              ),
-            ),
-            title: const Text('Buttons'),
+      OneUIView(
+        title: Text('One UI Examples'),
+        actions: [
+          OneUIPopupMenuButton(
+            itemBuilder: (context) => <PopupMenuEntry>[
+              const OneUIPopupMenuItem(child: Text('Option 1')),
+              const OneUIPopupMenuItem(child: Text('Option 2')),
+              const OneUIPopupMenuItem(child: Text('Option 3')),
+            ],
           ),
-          ListTile(
-            onTap: () => showOneUIDialog(
-              context: context,
-              builder: (context) {
-                return OneUIAlertDialog(
-                  title: const Text("title"),
-                  content: const Text("This is a demo alert dialog."),
-                  actions: [
-                    OneUIDialogAction(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      child: const Text("Cancel"),
-                    ),
-                    OneUIDialogAction(
+        ],
+        child: ListView(
+          children: [
+            ListTile(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const ButtonPage(),
+                ),
+              ),
+              title: const Text('Buttons'),
+            ),
+            ListTile(
+              onTap: () => showOneUIDialog(
+                context: context,
+                builder: (context) {
+                  return OneUIAlertDialog(
+                    title: const Text("title"),
+                    content: const Text("This is a demo alert dialog."),
+                    actions: [
+                      OneUIDialogAction(
                         onPressed: () {
                           Navigator.pop(context);
                         },
-                        child: const Text("Accept")),
-                  ],
-                );
-              },
-            ),
-            title: const Text('Dialog'),
-          ),
-          ListTile(
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => const SwitchPage(),
+                        child: const Text("Cancel"),
+                      ),
+                      OneUIDialogAction(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: const Text("Accept")),
+                    ],
+                  );
+                },
               ),
+              title: const Text('Dialog'),
             ),
-            title: const Text('Switches'),
-          ),
-          ListTile(
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => const SliderPage(),
+            ListTile(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const SwitchPage(),
+                ),
               ),
+              title: const Text('Switches'),
             ),
-            title: const Text('Sliders'),
+            ListTile(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const SliderPage(),
+                ),
+              ),
+              title: const Text('Sliders'),
+            ),
+          ],
+        ),
+      ),
+      OneUIView(
+        title: Text('One UI Examples'),
+        actions: [
+          OneUIPopupMenuButton(
+            itemBuilder: (context) => <PopupMenuEntry>[
+              const OneUIPopupMenuItem(child: Text('Option 1')),
+              const OneUIPopupMenuItem(child: Text('Option 2')),
+              const OneUIPopupMenuItem(child: Text('Option 3')),
+            ],
+          ),
+        ],
+        slivers: [
+          const SliverFillRemaining(
+            child: Center(child: Text('Second Page')),
           ),
         ],
       ),
-      const Center(child: Text('Second Page')),
     ];
 
     return Scaffold(
-        // body: IndexedStack(
-        //   index: _selectedIndex,
-        //   children: _widgetOption,
-        // ),
-        body: OneUIView(
-          title: const Text('One UI Examples'),
-          actions: [
-            OneUIPopupMenuButton(
-              itemBuilder: (context) => <PopupMenuEntry>[
-                const OneUIPopupMenuItem(child: Text('Option 1')),
-                const OneUIPopupMenuItem(child: Text('Option 2')),
-                const OneUIPopupMenuItem(child: Text('Option 3')),
-              ],
-            ),
-          ],
-          child: IndexedStack(
-            index: _selectedIndex,
-            children: _widgetOption,
-          ),
+        body: IndexedStack(
+          index: _selectedIndex,
+          children: _widgetOption,
         ),
         bottomNavigationBar: OneUIBottomNavigationBar(
           currentIndex: _selectedIndex,

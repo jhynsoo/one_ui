@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:one_ui/one_ui.dart';
 import 'package:one_ui/src/effects/ink_ripple.dart';
 import 'package:one_ui/src/widgets/buttons/icon_button.dart';
 
@@ -309,8 +310,7 @@ class _PopupMenu<T> extends StatelessWidget {
         alignment: Alignment.topRight,
         scale: Tween<double>(begin: 0.7, end: 1.0).animate(CurvedAnimation(
           parent: route.animation!,
-          curve: Curves.easeOutBack,
-          reverseCurve: Curves.easeIn,
+          curve: Curves.ease,
         )),
         child: Material(
           // shape: route.shape ?? popupMenuTheme.shape,
@@ -772,6 +772,7 @@ class _OneUIPopupMenuButtonState<T> extends State<OneUIPopupMenuButton<T>> {
           canRequestFocus: _canRequestFocus,
           child: widget.child,
           enableFeedback: enableFeedback,
+          splashFactory: OneUIInkSplash.splashFactory,
         ),
       );
     }

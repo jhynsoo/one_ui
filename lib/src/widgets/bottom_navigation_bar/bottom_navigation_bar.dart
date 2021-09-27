@@ -127,6 +127,7 @@ class _OneUIBottomNavigationTile extends StatelessWidget {
             InkResponse(
               splashFactory: OneUIBottomNavigationBarSplash.splashFactory,
               hoverColor: Colors.transparent,
+              highlightColor: Colors.transparent,
               onTap: onTap,
               mouseCursor: mouseCursor,
               enableFeedback: enableFeedback,
@@ -327,17 +328,6 @@ class _OneUIBottomNavigationBarState extends State<OneUIBottomNavigationBar>
       widget.unselectedLabelStyle ?? bottomTheme.unselectedLabelStyle,
       widget.fontSize,
     );
-
-    final Color themeColor;
-    switch (themeData.brightness) {
-      case Brightness.light:
-        themeColor = themeData.colorScheme.primary;
-        break;
-      case Brightness.dark:
-        themeColor = themeData.colorScheme.secondary;
-        break;
-    }
-
     final ColorTween colorTween;
     colorTween = ColorTween(
       begin: widget.unselectedItemColor ??
@@ -346,7 +336,7 @@ class _OneUIBottomNavigationBarState extends State<OneUIBottomNavigationBar>
       end: widget.selectedItemColor ??
           bottomTheme.selectedItemColor ??
           widget.fixedColor ??
-          themeColor,
+          themeData.textTheme.bodyText1?.color,
     );
     final MouseCursor effectiveMouseCursor =
         widget.mouseCursor ?? SystemMouseCursors.click;

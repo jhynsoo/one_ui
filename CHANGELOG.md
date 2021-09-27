@@ -11,3 +11,8 @@
 
 * Add expandedHeight to OneUIView
 * Change children to child in OneUIView
+
+## 0.3.0
+
+* Add some options to OneUIView
+* Update widgets for One UI 4.0

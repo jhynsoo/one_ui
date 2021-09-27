@@ -10,7 +10,9 @@ class OneUIView extends StatefulWidget {
   const OneUIView({
     Key? key,
     required this.title,
+    this.automaticallyImplyLeading = true,
     this.largeTitle,
+    this.largeTitleTextStyle,
     this.actions,
     this.useOneUITextStyle = true,
     this.collapsedHeight = kToolbarHeight,
@@ -29,6 +31,9 @@ class OneUIView extends StatefulWidget {
   /// The text to display on expanded app bar.
   final Widget? largeTitle;
 
+  /// The style to use for large title text.
+  final TextStyle? largeTitleTextStyle;
+
   /// The text to display on collapsed app bar.
   /// If null, it shows [largeTitle].
   final Widget title;
@@ -37,6 +42,11 @@ class OneUIView extends StatefulWidget {
   ///
   /// This property is used to configure an [OneUIAppBar].
   final List<Widget>? actions;
+
+  /// {@macro oneui.appbar.automaticallyImplyLeading}
+  ///
+  /// This property is used to configure an [OneUIAppBar].
+  final bool automaticallyImplyLeading;
 
   /// If true, use default One UI text style.
   final bool useOneUITextStyle;
@@ -188,26 +198,25 @@ class _OneUIViewState extends State<OneUIView> {
     Widget largeTitle = widget.largeTitle ?? widget.title;
     if (widget.useOneUITextStyle) {
       largeTitle = DefaultTextStyle(
-        style: Theme.of(context).textTheme.headline6!.copyWith(
-              fontWeight: FontWeight.w300,
-              fontSize: 40.0,
-            ),
+        style: widget.largeTitleTextStyle ??
+            Theme.of(context).textTheme.headline6!.copyWith(
+                  fontWeight: FontWeight.w300,
+                  fontSize: 40.0,
+                ),
         softWrap: false,
         child: largeTitle,
       );
     }
 
-    return Expanded(
-      child: FadeTransition(
-        opacity: Tween(begin: 0.0, end: 1.0).animate(
-          CurvedAnimation(
-            parent: animation,
-            curve: const Interval(0.4, 1.0, curve: Curves.easeIn),
-          ),
+    return FadeTransition(
+      opacity: Tween(begin: 0.0, end: 1.0).animate(
+        CurvedAnimation(
+          parent: animation,
+          curve: const Interval(0.4, 1.0, curve: Curves.easeIn),
         ),
-        child: Center(
-          child: largeTitle,
-        ),
+      ),
+      child: Center(
+        child: largeTitle,
       ),
     );
   }
@@ -218,6 +227,7 @@ class _OneUIViewState extends State<OneUIView> {
       child: SizedBox(
         height: collapsedHeight,
         child: OneUIAppBar(
+          automaticallyImplyLeading: widget.automaticallyImplyLeading,
           backgroundColor: widget.backgroundColor,
           backwardsCompatibility: false,
           title: FadeTransition(
@@ -253,7 +263,8 @@ class _OneUIViewState extends State<OneUIView> {
             builder: (context, constraints) {
               final expandRatio = _expandRatio(constraints);
               final animation = AlwaysStoppedAnimation(expandRatio);
-              return Column(
+              return Stack(
+                alignment: AlignmentDirectional.bottomStart,
                 children: [
                   _expandedTitle(animation),
                   _collapsedAppBar(animation),

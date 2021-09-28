@@ -16,3 +16,7 @@
 
 * Add some options to OneUIView
 * Update widgets for One UI 4.0
+
+## 0.3.1
+
+* Fix dependencies problem

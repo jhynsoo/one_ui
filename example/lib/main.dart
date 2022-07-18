@@ -10,8 +10,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       title: 'One UI Example',
+      theme: ThemeData(
+        useMaterial3: true,
+      ),
       home: HomePage(),
     );
   }
@@ -157,7 +160,6 @@ class ButtonPage extends StatelessWidget {
                 ),
                 OneUIIconButton(
                   onPressed: () {},
-                  splashRadius: 24,
                   icon: const Icon(Icons.home),
                 ),
               ],

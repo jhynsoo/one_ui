@@ -20,3 +20,7 @@
 ## 0.3.1
 
 * Fix dependencies problem
+
+## 0.3.2
+
+* Add onHover, onFocusChange to OneUIContainedButton, OneUIFlatButton

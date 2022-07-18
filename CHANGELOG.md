@@ -16,3 +16,11 @@
 
 * Add some options to OneUIView
 * Update widgets for One UI 4.0
+
+## 0.3.1
+
+* Fix dependencies problem
+
+## 0.3.2
+
+* Add onHover, onFocusChange to OneUIContainedButton, OneUIFlatButton

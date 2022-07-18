@@ -1,6 +1,5 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 
 const double _kTrackHeight = 16.0;
 const double _kTrackBorderHeight = _kTrackHeight + 1.0;

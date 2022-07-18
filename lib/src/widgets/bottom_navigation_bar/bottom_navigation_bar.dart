@@ -1,8 +1,6 @@
 import 'dart:math' as math;
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:one_ui/src/effects/bottom_navigation_bar_ink_splash.dart';
 import 'package:one_ui/src/widgets/bottom_navigation_bar/bottom_navigation_bar_item.dart';
 import 'package:vector_math/vector_math_64.dart' show Vector3;
@@ -51,14 +49,12 @@ class OneUIBottomNavigationBar extends StatefulWidget {
   /// The color of the [BottomNavigationBar] itself.
   final Color? backgroundColor;
 
-  /// The color of the selected [OneUIBottomNavigationBarItem.label] and
-  /// [OneUIBottomNavigationBarItem.title].
+  /// The color of the selected [OneUIBottomNavigationBarItem.label].
   ///
   /// If null then the [ThemeData.primaryColor] is used.
   final Color? selectedItemColor;
 
-  /// The color of the unselected [OneUIBottomNavigationBarItem.label] and
-  /// [OneUIBottomNavigationBarItem.title]s.
+  /// The color of the unselected [OneUIBottomNavigationBarItem.label]s.
   ///
   /// If null then the [ThemeData.unselectedWidgetColor]'s color is used.
   final Color? unselectedItemColor;

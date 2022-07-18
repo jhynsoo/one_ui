@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:one_ui/src/effects/ink_ripple.dart';
 
 const double _kMinButtonSize = kMinInteractiveDimension;
@@ -9,7 +8,7 @@ const double _kMinButtonSize = kMinInteractiveDimension;
 class OneUIIconButton extends IconButton {
   const OneUIIconButton({
     Key? key,
-    double iconSize = 24.0,
+    double? iconSize,
     VisualDensity? visualDensity,
     EdgeInsetsGeometry padding = const EdgeInsets.all(8.0),
     Alignment alignment = Alignment.center,
@@ -73,19 +72,21 @@ class OneUIIconButton extends IconButton {
         );
     final BoxConstraints adjustedConstraints =
         effectiveVisualDensity.effectiveConstraints(unadjustedConstraints);
+    final double effectiveIconSize =
+        iconSize ?? IconTheme.of(context).size ?? 24.0;
 
     Widget result = ConstrainedBox(
       constraints: adjustedConstraints,
       child: Padding(
         padding: padding,
         child: SizedBox(
-          height: iconSize,
-          width: iconSize,
+          height: effectiveIconSize,
+          width: effectiveIconSize,
           child: Align(
             alignment: alignment,
             child: IconTheme.merge(
               data: IconThemeData(
-                size: iconSize,
+                size: effectiveIconSize,
                 color: currentColor,
               ),
               child: icon,
@@ -120,9 +121,10 @@ class OneUIIconButton extends IconButton {
         splashFactory: OneUIInkRipple.splashFactory,
         radius: splashRadius ??
             math.max(
-              Material.defaultSplashRadius,
-              (iconSize + math.min(padding.horizontal, padding.vertical)) * 0.7,
-              // x 0.5 for diameter -> radius and + 40% overflow derived from other Material apps.
+              20,
+              (effectiveIconSize +
+                      math.min(padding.horizontal, padding.vertical)) *
+                  0.5,
             ),
       ),
     );

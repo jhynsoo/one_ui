@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  quality:
+    name: Flutter ${{ matrix.flutter-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        flutter-version:
+          - 3.35.7
+          - 3.x
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ matrix.flutter-version }}
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter pub get
+        working-directory: example
+      - run: dart format --output=none --set-exit-if-changed lib test example/lib example/test example/integration_test example/test_driver
+      - run: flutter analyze --fatal-infos --fatal-warnings
+      - run: flutter test
+      - run: flutter test
+        working-directory: example
+
+  web-catalog:
+    name: Web widget catalog
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter config --enable-web
+      - run: flutter pub get
+        working-directory: example
+      - run: npx @puppeteer/browsers install chromedriver@stable --path "$HOME/.cache/chromedriver"
+      - name: Run the catalog flow in Chrome
+        working-directory: example
+        run: |
+          CHROMEDRIVER="$(find "$HOME/.cache/chromedriver" -type f -name chromedriver | head -n 1)"
+          "$CHROMEDRIVER" --port=4444 &
+          CHROMEDRIVER_PID=$!
+          trap 'kill "$CHROMEDRIVER_PID" 2>/dev/null || true' EXIT
+          for attempt in {1..30}; do
+            if curl --fail --silent http://localhost:4444/status >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          curl --fail --silent http://localhost:4444/status >/dev/null
+          flutter drive \
+            --driver=test_driver/integration_test.dart \
+            --target=integration_test/widget_catalog_test.dart \
+            -d web-server \
+            --browser-name=chrome \
+            --release \
+            --no-pub

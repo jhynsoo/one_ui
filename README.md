@@ -2,6 +2,33 @@
 
 Unofficial implementation of Samsung One UI for [Flutter](https://flutter.dev).
 
+## Requirements
+
+- Flutter 3.35 or later
+- Dart 3.9 or later
+
+## Installation
+
+Add `one_ui` to your application:
+
+```yaml
+dependencies:
+  one_ui: ^0.4.0
+```
+
+Import the public library:
+
+```dart
+import 'package:one_ui/one_ui.dart';
+```
+
+The included example is a complete catalog of the public widgets. Run it with:
+
+```shell
+cd example
+flutter run
+```
+
 ## Resources
 
 - [Samsung Developers | One UI Design Guidelines](https://developer.samsung.com/one-ui/index.html)
@@ -16,16 +43,45 @@ An One UI style [bottom navigation bar](https://api.flutter.dev/flutter/material
 - Example
 
 ```dart
-Scaffold(
-  bottomNavigationBar: OneUIBottomNavigationBar(
-    currentIndex: _index,
-    onTap: (value) {
-      setState(() {
-        _index = value;
-      });
-    },
-  ),
-)
+import 'package:flutter/material.dart';
+import 'package:one_ui/one_ui.dart';
+
+void main() {
+  runApp(const BottomNavigationExample());
+}
+
+class BottomNavigationExample extends StatefulWidget {
+  const BottomNavigationExample({super.key});
+
+  @override
+  State<BottomNavigationExample> createState() =>
+      _BottomNavigationExampleState();
+}
+
+class _BottomNavigationExampleState extends State<BottomNavigationExample> {
+  int _index = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        body: Center(child: Text('Selected index: $_index')),
+        bottomNavigationBar: OneUIBottomNavigationBar(
+          currentIndex: _index,
+          items: const [
+            OneUIBottomNavigationBarItem(label: 'Home'),
+            OneUIBottomNavigationBarItem(label: 'More'),
+          ],
+          onTap: (value) {
+            setState(() {
+              _index = value;
+            });
+          },
+        ),
+      ),
+    );
+  }
+}
 ```
 
 ### Buttons
@@ -158,10 +214,41 @@ An One UI Style [Slider](https://api.flutter.dev/flutter/material/Slider-class.h
 - Example
 
 ```dart
-OneUISlider(
-  value: _value,
-  onChanged: (value)
-)
+import 'package:flutter/material.dart';
+import 'package:one_ui/one_ui.dart';
+
+void main() {
+  runApp(const SliderExample());
+}
+
+class SliderExample extends StatefulWidget {
+  const SliderExample({super.key});
+
+  @override
+  State<SliderExample> createState() => _SliderExampleState();
+}
+
+class _SliderExampleState extends State<SliderExample> {
+  double _value = 0.5;
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: OneUISlider(
+            value: _value,
+            onChanged: (value) {
+              setState(() {
+                _value = value;
+              });
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
 ```
 
 ### View

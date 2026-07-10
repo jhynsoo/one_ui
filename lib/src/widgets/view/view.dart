@@ -8,7 +8,7 @@ const BorderRadius _kRadius = BorderRadius.all(Radius.circular(26.0));
 
 class OneUIView extends StatefulWidget {
   const OneUIView({
-    Key? key,
+    super.key,
     required this.title,
     this.automaticallyImplyLeading = true,
     this.largeTitle,
@@ -24,9 +24,8 @@ class OneUIView extends StatefulWidget {
     this.slivers,
     this.globalKey,
     this.initCollapsed = false,
-  })  : assert(child != null || slivers != null),
-        assert(expandedHeight == null || expandedHeightRatio == null),
-        super(key: key);
+  }) : assert(child != null || slivers != null),
+       assert(expandedHeight == null || expandedHeightRatio == null);
 
   /// The text to display on expanded app bar.
   final Widget? largeTitle;
@@ -109,7 +108,7 @@ class OneUIView extends StatefulWidget {
   final GlobalKey<NestedScrollViewState>? globalKey;
 
   @override
-  _OneUIViewState createState() => _OneUIViewState();
+  State<OneUIView> createState() => _OneUIViewState();
 }
 
 class _OneUIViewState extends State<OneUIView> {
@@ -123,10 +122,10 @@ class _OneUIViewState extends State<OneUIView> {
         (widget.expandedHeightRatio != null
             ? widget.expandedHeightRatio! * size.height
             : (size.width > 600
-                ? size.height > 600
-                    ? _kTabletExpandedAppBarHeightFactor * size.height
-                    : collapsedHeight
-                : _kPhoneExpandedAppBarHeightFactor * size.height));
+                  ? size.height > 600
+                        ? _kTabletExpandedAppBarHeightFactor * size.height
+                        : collapsedHeight
+                  : _kPhoneExpandedAppBarHeightFactor * size.height));
   }
 
   double get collapsedHeight => widget.collapsedHeight;
@@ -186,7 +185,8 @@ class _OneUIViewState extends State<OneUIView> {
   }
 
   double _expandRatio(BoxConstraints constraints) {
-    double expandRatio = (constraints.maxHeight - collapsedHeight) /
+    double expandRatio =
+        (constraints.maxHeight - collapsedHeight) /
         (expandedHeight - collapsedHeight);
 
     if (expandRatio > 1.0) return 1.0;
@@ -198,11 +198,12 @@ class _OneUIViewState extends State<OneUIView> {
     Widget largeTitle = widget.largeTitle ?? widget.title;
     if (widget.useOneUITextStyle) {
       largeTitle = DefaultTextStyle(
-        style: widget.largeTitleTextStyle ??
-            Theme.of(context).textTheme.headline6!.copyWith(
-                  fontWeight: FontWeight.w300,
-                  fontSize: 40.0,
-                ),
+        style:
+            widget.largeTitleTextStyle ??
+            Theme.of(context).textTheme.titleLarge!.copyWith(
+              fontWeight: FontWeight.w300,
+              fontSize: 40.0,
+            ),
         softWrap: false,
         child: largeTitle,
       );
@@ -215,9 +216,7 @@ class _OneUIViewState extends State<OneUIView> {
           curve: const Interval(0.4, 1.0, curve: Curves.easeIn),
         ),
       ),
-      child: Center(
-        child: largeTitle,
-      ),
+      child: Center(child: largeTitle),
     );
   }
 
@@ -254,7 +253,8 @@ class _OneUIViewState extends State<OneUIView> {
           pinned: true,
           floating: true,
           automaticallyImplyLeading: false,
-          backgroundColor: widget.backgroundColor ??
+          backgroundColor:
+              widget.backgroundColor ??
               Theme.of(context).scaffoldBackgroundColor,
           expandedHeight: expandedHeight,
           toolbarHeight: collapsedHeight,
@@ -279,19 +279,16 @@ class _OneUIViewState extends State<OneUIView> {
 
   @override
   Widget build(BuildContext context) {
-    final Widget _child =
+    final Widget child =
         widget.child ?? CustomScrollView(slivers: widget.slivers!);
-    final Widget _body = SafeArea(
+    final Widget body = SafeArea(
       top: false,
       bottom: false,
       child: Padding(
         padding: EdgeInsets.only(top: collapsedHeight),
         child: Builder(
           builder: (BuildContext context) {
-            return ClipRRect(
-              borderRadius: _kRadius,
-              child: _child,
-            );
+            return ClipRRect(borderRadius: _kRadius, child: child);
           },
         ),
       ),
@@ -304,7 +301,7 @@ class _OneUIViewState extends State<OneUIView> {
           key: _nestedScrollViewStateKey,
           physics: OneUIScrollPhysics(expandedHeight),
           headerSliverBuilder: _appBar,
-          body: _body,
+          body: body,
         ),
       ),
     );

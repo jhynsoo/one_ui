@@ -1,5 +1,3 @@
-library one_ui;
-
 export 'package:one_ui/src/effects/ink_ripple.dart';
 export 'package:one_ui/src/effects/ink_splash.dart';
 

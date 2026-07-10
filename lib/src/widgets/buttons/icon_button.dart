@@ -7,49 +7,27 @@ const double _kMinButtonSize = kMinInteractiveDimension;
 
 class OneUIIconButton extends IconButton {
   const OneUIIconButton({
-    Key? key,
-    double? iconSize,
-    VisualDensity? visualDensity,
-    EdgeInsetsGeometry padding = const EdgeInsets.all(8.0),
-    Alignment alignment = Alignment.center,
-    double? splashRadius,
-    Color? color,
-    Color? focusColor,
-    Color? hoverColor,
-    Color? highlightColor,
-    Color? splashColor,
-    Color? disabledColor,
-    required void Function()? onPressed,
-    MouseCursor mouseCursor = SystemMouseCursors.click,
-    FocusNode? focusNode,
-    bool autofocus = false,
-    String? tooltip,
-    bool enableFeedback = true,
-    BoxConstraints? constraints,
-    required Widget icon,
-  })  : assert(splashRadius == null || splashRadius > 0),
-        super(
-          key: key,
-          iconSize: iconSize,
-          visualDensity: visualDensity,
-          padding: padding,
-          alignment: alignment,
-          splashRadius: splashRadius,
-          color: color,
-          focusColor: focusColor,
-          hoverColor: hoverColor,
-          highlightColor: highlightColor,
-          splashColor: splashColor,
-          disabledColor: disabledColor,
-          onPressed: onPressed,
-          mouseCursor: mouseCursor,
-          focusNode: focusNode,
-          autofocus: autofocus,
-          tooltip: tooltip,
-          enableFeedback: enableFeedback,
-          constraints: constraints,
-          icon: icon,
-        );
+    super.key,
+    super.iconSize,
+    super.visualDensity,
+    EdgeInsetsGeometry super.padding = const EdgeInsets.all(8.0),
+    Alignment super.alignment = Alignment.center,
+    super.splashRadius,
+    super.color,
+    super.focusColor,
+    super.hoverColor,
+    super.highlightColor,
+    super.splashColor,
+    super.disabledColor,
+    required super.onPressed,
+    MouseCursor super.mouseCursor = SystemMouseCursors.click,
+    super.focusNode,
+    super.autofocus = false,
+    super.tooltip,
+    bool super.enableFeedback = true,
+    super.constraints,
+    required super.icon,
+  }) : assert(splashRadius == null || splashRadius > 0);
 
   @override
   Widget build(BuildContext context) {
@@ -64,31 +42,35 @@ class OneUIIconButton extends IconButton {
 
     final VisualDensity effectiveVisualDensity =
         visualDensity ?? theme.visualDensity;
+    final EdgeInsetsGeometry effectivePadding =
+        padding ?? const EdgeInsets.all(8.0);
+    final AlignmentGeometry effectiveAlignment = alignment ?? Alignment.center;
+    final MouseCursor effectiveMouseCursor =
+        mouseCursor ?? SystemMouseCursors.click;
+    final bool effectiveEnableFeedback = enableFeedback ?? true;
 
-    final BoxConstraints unadjustedConstraints = constraints ??
+    final BoxConstraints unadjustedConstraints =
+        constraints ??
         const BoxConstraints(
           minWidth: _kMinButtonSize,
           minHeight: _kMinButtonSize,
         );
-    final BoxConstraints adjustedConstraints =
-        effectiveVisualDensity.effectiveConstraints(unadjustedConstraints);
+    final BoxConstraints adjustedConstraints = effectiveVisualDensity
+        .effectiveConstraints(unadjustedConstraints);
     final double effectiveIconSize =
         iconSize ?? IconTheme.of(context).size ?? 24.0;
 
     Widget result = ConstrainedBox(
       constraints: adjustedConstraints,
       child: Padding(
-        padding: padding,
+        padding: effectivePadding,
         child: SizedBox(
           height: effectiveIconSize,
           width: effectiveIconSize,
           child: Align(
-            alignment: alignment,
+            alignment: effectiveAlignment,
             child: IconTheme.merge(
-              data: IconThemeData(
-                size: effectiveIconSize,
-                color: currentColor,
-              ),
+              data: IconThemeData(size: effectiveIconSize, color: currentColor),
               child: icon,
             ),
           ),
@@ -97,10 +79,7 @@ class OneUIIconButton extends IconButton {
     );
 
     if (tooltip != null) {
-      result = Tooltip(
-        message: tooltip!,
-        child: result,
-      );
+      result = Tooltip(message: tooltip!, child: result);
     }
 
     return Semantics(
@@ -111,21 +90,25 @@ class OneUIIconButton extends IconButton {
         autofocus: autofocus,
         canRequestFocus: onPressed != null,
         onTap: onPressed,
-        mouseCursor: mouseCursor,
-        enableFeedback: enableFeedback,
-        child: result,
+        mouseCursor: effectiveMouseCursor,
+        enableFeedback: effectiveEnableFeedback,
         focusColor: focusColor ?? theme.focusColor,
         hoverColor: hoverColor ?? theme.hoverColor,
         highlightColor: highlightColor ?? Colors.transparent,
         splashColor: splashColor ?? theme.splashColor,
         splashFactory: OneUIInkRipple.splashFactory,
-        radius: splashRadius ??
+        radius:
+            splashRadius ??
             math.max(
               20,
               (effectiveIconSize +
-                      math.min(padding.horizontal, padding.vertical)) *
+                      math.min(
+                        effectivePadding.horizontal,
+                        effectivePadding.vertical,
+                      )) *
                   0.5,
             ),
+        child: result,
       ),
     );
   }

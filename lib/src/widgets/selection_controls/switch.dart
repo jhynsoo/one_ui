@@ -25,7 +25,7 @@ class OneUISwitch extends StatefulWidget {
   /// * [value] determines whether this switch is on or off.
   /// * [onChanged] is called when the user toggles the switch on or off.
   const OneUISwitch({
-    Key? key,
+    super.key,
     required this.value,
     required this.onChanged,
     this.useOneUIColor = false,
@@ -48,9 +48,8 @@ class OneUISwitch extends StatefulWidget {
     this.splashRadius,
     this.focusNode,
     this.autofocus = false,
-  })  : assert(activeThumbImage != null || onActiveThumbImageError == null),
-        assert(inactiveThumbImage != null || onInactiveThumbImageError == null),
-        super(key: key);
+  }) : assert(activeThumbImage != null || onActiveThumbImageError == null),
+       assert(inactiveThumbImage != null || onInactiveThumbImageError == null);
 
   /// Whether this switch is on or off.
   ///
@@ -77,10 +76,10 @@ class OneUISwitch extends StatefulWidget {
 
   /// The color to use when this switch is on.
   ///
-  /// Defaults to [ThemeData.toggleableActiveColor].
+  /// Defaults to [ColorScheme.secondary].
   ///
   /// If [useOneUIColor] returns true, OneUI Color will be used instead of this color.
-  ///  Else if [trackColor] returns a non-null color in the [MaterialState.selected]
+  ///  Else if [trackColor] returns a non-null color in the [WidgetState.selected]
   /// state, it will be used instead of this color.
   final Color? activeColor;
 
@@ -106,10 +105,10 @@ class OneUISwitch extends StatefulWidget {
   /// The color of this [Switch]'s thumb.
   ///
   /// Resolved in the following states:
-  ///  * [MaterialState.selected].
-  ///  * [MaterialState.hovered].
-  ///  * [MaterialState.focused].
-  ///  * [MaterialState.disabled].
+  ///  * [WidgetState.selected].
+  ///  * [WidgetState.hovered].
+  ///  * [WidgetState.focused].
+  ///  * [WidgetState.disabled].
   ///
   /// If null, then the value of [activeColor] is used in the selected
   /// state and [inactiveThumbColor] in the default state. If that is also null,
@@ -119,17 +118,17 @@ class OneUISwitch extends StatefulWidget {
   /// | State    | Light theme                       | Dark theme                        |
   /// |----------|-----------------------------------|-----------------------------------|
   /// | Default  | `Colors.grey.shade50`             | `Colors.grey.shade400`            |
-  /// | Selected | [ThemeData.toggleableActiveColor] | [ThemeData.toggleableActiveColor] |
+  /// | Selected | [ColorScheme.secondary] | [ColorScheme.secondary] |
   /// | Disabled | `Colors.grey.shade400`            | `Colors.grey.shade800`            |
   final Color? thumbColor;
 
   /// The color of this [Switch]'s track.
   ///
   /// Resolved in the following states:
-  ///  * [MaterialState.selected].
-  ///  * [MaterialState.hovered].
-  ///  * [MaterialState.focused].
-  ///  * [MaterialState.disabled].
+  ///  * [WidgetState.selected].
+  ///  * [WidgetState.hovered].
+  ///  * [WidgetState.focused].
+  ///  * [WidgetState.disabled].
   ///
   /// If null, then the value of [activeTrackColor] is used in the selected
   /// state and [inactiveTrackColor] in the default state. If that is also null,
@@ -141,15 +140,15 @@ class OneUISwitch extends StatefulWidget {
   /// | Default  | `Colors.grey.shade50`  | `Colors.grey.shade400` |
   /// | Selected | [activeColor]          | [activeColor]          |
   /// | Disabled | `Color(0x52000000)`    | `Colors.white30`       |
-  final MaterialStateProperty<Color?>? trackColor;
+  final WidgetStateProperty<Color?>? trackColor;
 
   /// The color of this [Switch]'s thumb border.
   ///
   /// Resolved in the following states:
-  ///  * [MaterialState.selected].
-  ///  * [MaterialState.hovered].
-  ///  * [MaterialState.focused].
-  ///  * [MaterialState.disabled].
+  ///  * [WidgetState.selected].
+  ///  * [WidgetState.hovered].
+  ///  * [WidgetState.focused].
+  ///  * [WidgetState.disabled].
   ///
   /// null, then the following colors are used:
   ///
@@ -158,15 +157,15 @@ class OneUISwitch extends StatefulWidget {
   /// | Default  | `Color(0x52000000)` | `Colors.white30` |
   /// | Selected | `[activeColor]`     | `[activeColor]`  |
   /// | Disabled | `Colors.black12`    | `Colors.white10` |
-  final MaterialStateProperty<Color?>? thumbBorderColor;
+  final WidgetStateProperty<Color?>? thumbBorderColor;
 
   /// The color of this [Switch]'s track border.
   ///
   /// Resolved in the following states:
-  ///  * [MaterialState.selected].
-  ///  * [MaterialState.hovered].
-  ///  * [MaterialState.focused].
-  ///  * [MaterialState.disabled].
+  ///  * [WidgetState.selected].
+  ///  * [WidgetState.hovered].
+  ///  * [WidgetState.focused].
+  ///  * [WidgetState.disabled].
   ///
   /// null, then the following colors are used:
   ///
@@ -175,7 +174,7 @@ class OneUISwitch extends StatefulWidget {
   /// | Default  | `Color(0x52000000)`  | `Colors.white30`     |
   /// | Selected | `Colors.transparent` | `Colors.transparent` |
   /// | Disabled | `Colors.black12`     | `Colors.white10`     |
-  final MaterialStateProperty<Color?>? trackBorderColor;
+  final WidgetStateProperty<Color?>? trackBorderColor;
 
   /// Configures the minimum size of the tap target.
   ///
@@ -190,21 +189,21 @@ class OneUISwitch extends StatefulWidget {
   /// The cursor for a mouse pointer when it enters or is hovering over the
   /// widget.
   ///
-  /// If [mouseCursor] is a [MaterialStateProperty<MouseCursor>],
-  /// [MaterialStateProperty.resolve] is used for the following [MaterialState]s:
+  /// If [mouseCursor] is a [WidgetStateProperty<MouseCursor>],
+  /// [WidgetStateProperty.resolve] is used for the following [WidgetState]s:
   ///
-  ///  * [MaterialState.selected].
-  ///  * [MaterialState.hovered].
-  ///  * [MaterialState.focused].
-  ///  * [MaterialState.disabled].
+  ///  * [WidgetState.selected].
+  ///  * [WidgetState.hovered].
+  ///  * [WidgetState.focused].
+  ///  * [WidgetState.disabled].
   ///
   /// If null, then the value of [SwitchThemeData.mouseCursor] is used. If that
-  /// is also null, then [MaterialStateMouseCursor.clickable] is used.
+  /// is also null, then [WidgetStateMouseCursor.clickable] is used.
   final MouseCursor? mouseCursor;
 
   /// The color for the button's [Material] when it has the input focus.
   ///
-  /// If [overlayColor] returns a non-null color in the [MaterialState.focused]
+  /// If [overlayColor] returns a non-null color in the [WidgetState.focused]
   /// state, it will be used instead.
   ///
   /// If null, then the value of [SwitchThemeData.overlayColor] is used in the
@@ -214,7 +213,7 @@ class OneUISwitch extends StatefulWidget {
 
   /// The color for the button's [Material] when a pointer is hovering over it.
   ///
-  /// If [overlayColor] returns a non-null color in the [MaterialState.hovered]
+  /// If [overlayColor] returns a non-null color in the [WidgetState.hovered]
   /// state, it will be used instead.
   ///
   /// If null, then the value of [SwitchThemeData.overlayColor] is used in the
@@ -225,19 +224,19 @@ class OneUISwitch extends StatefulWidget {
   /// The color for the switch's [Material].
   ///
   /// Resolves in the following states:
-  ///  * [MaterialState.pressed].
-  ///  * [MaterialState.selected].
-  ///  * [MaterialState.hovered].
-  ///  * [MaterialState.focused].
+  ///  * [WidgetState.pressed].
+  ///  * [WidgetState.selected].
+  ///  * [WidgetState.hovered].
+  ///  * [WidgetState.focused].
   ///
   /// If null, then the value of [activeColor] with alpha
   /// [kRadialReactionAlpha], [focusColor] and [hoverColor] is used in the
   /// pressed, focused and hovered state. If that is also null,
   /// the value of [SwitchThemeData.overlayColor] is used. If that is
-  /// also null, then the value of [ThemeData.toggleableActiveColor] with alpha
+  /// also null, then the value of [ColorScheme.secondary] with alpha
   /// [kRadialReactionAlpha], [ThemeData.focusColor] and [ThemeData.hoverColor]
   /// is used in the pressed, focused and hovered state.
-  final MaterialStateProperty<Color?>? overlayColor;
+  final WidgetStateProperty<Color?>? overlayColor;
 
   /// The splash radius of the circular [Material] ink response.
   ///
@@ -252,7 +251,7 @@ class OneUISwitch extends StatefulWidget {
   final bool autofocus;
 
   @override
-  _OneUISwitchState createState() => _OneUISwitchState();
+  State<OneUISwitch> createState() => _OneUISwitchState();
 }
 
 class _OneUISwitchState extends State<OneUISwitch>
@@ -301,11 +300,11 @@ class _OneUISwitchState extends State<OneUISwitch>
   @override
   bool? get value => widget.value;
 
-  MaterialStateProperty<Color> get _thumbColor {
+  WidgetStateProperty<Color> get _thumbColor {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return MaterialStateProperty.resolveWith((Set<MaterialState> states) {
-      if (states.contains(MaterialState.disabled)) {
+    return WidgetStateProperty.resolveWith((Set<WidgetState> states) {
+      if (states.contains(WidgetState.disabled)) {
         return widget.disabledThumbColor ??
             (isDark ? const Color(0xff828282) : const Color(0xfffafafa));
       }
@@ -313,52 +312,52 @@ class _OneUISwitchState extends State<OneUISwitch>
     });
   }
 
-  MaterialStateProperty<Color> get _trackColor {
+  WidgetStateProperty<Color> get _trackColor {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return MaterialStateProperty.resolveWith((Set<MaterialState> states) {
-      if (states.contains(MaterialState.disabled)) {
-        if (states.contains(MaterialState.selected)) {
+    return WidgetStateProperty.resolveWith((Set<WidgetState> states) {
+      if (states.contains(WidgetState.disabled)) {
+        if (states.contains(WidgetState.selected)) {
           return isDark ? Colors.white10 : Colors.black12;
         }
         return Colors.transparent;
       }
-      if (states.contains(MaterialState.selected)) {
+      if (states.contains(WidgetState.selected)) {
         return widget.useOneUIColor
             ? const Color(0xff3e91ff)
-            : widget.activeColor ?? Theme.of(context).toggleableActiveColor;
+            : widget.activeColor ?? Theme.of(context).colorScheme.secondary;
       }
       return Colors.transparent;
     });
   }
 
-  MaterialStateProperty<Color> get _thumbBorderColor {
+  WidgetStateProperty<Color> get _thumbBorderColor {
     final ThemeData theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     const Color black32 = Color(0x52000000);
 
-    return MaterialStateProperty.resolveWith((Set<MaterialState> states) {
-      if (states.contains(MaterialState.disabled)) {
+    return WidgetStateProperty.resolveWith((Set<WidgetState> states) {
+      if (states.contains(WidgetState.disabled)) {
         return isDark ? Colors.white10 : Colors.black12;
       }
-      if (states.contains(MaterialState.selected)) {
+      if (states.contains(WidgetState.selected)) {
         return widget.useOneUIColor
             ? const Color(0xff3e91ff)
-            : widget.activeColor ?? Theme.of(context).toggleableActiveColor;
+            : widget.activeColor ?? Theme.of(context).colorScheme.secondary;
       }
       return isDark ? Colors.white30 : black32;
     });
   }
 
-  MaterialStateProperty<Color> get _trackBorderColor {
+  WidgetStateProperty<Color> get _trackBorderColor {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     const Color black32 = Color(0x52000000);
 
-    return MaterialStateProperty.resolveWith((Set<MaterialState> states) {
-      if (states.contains(MaterialState.selected)) {
+    return WidgetStateProperty.resolveWith((Set<WidgetState> states) {
+      if (states.contains(WidgetState.selected)) {
         return Colors.transparent;
       }
-      if (states.contains(MaterialState.disabled)) {
+      if (states.contains(WidgetState.disabled)) {
         return isDark ? Colors.white10 : Colors.black12;
       }
       return isDark ? Colors.white30 : black32;
@@ -424,69 +423,72 @@ class _OneUISwitchState extends State<OneUISwitch>
 
     // Colors need to be resolved in selected and non selected states separately
     // so that they can be lerped between.
-    final Set<MaterialState> activeStates = states..add(MaterialState.selected);
-    final Set<MaterialState> inactiveStates = states
-      ..remove(MaterialState.selected);
+    final Set<WidgetState> activeStates = states..add(WidgetState.selected);
+    final Set<WidgetState> inactiveStates = states
+      ..remove(WidgetState.selected);
     final Color effectiveThumbColor =
         widget.thumbColor ?? _thumbColor.resolve(states);
     final Color effectiveActiveTrackColor =
         widget.trackColor?.resolve(activeStates) ??
-            _trackColor.resolve(activeStates);
+        _trackColor.resolve(activeStates);
     final Color effectiveInactiveTrackColor =
         widget.trackColor?.resolve(inactiveStates) ??
-            _trackColor.resolve(inactiveStates);
+        _trackColor.resolve(inactiveStates);
 
     final Color effectiveActiveThumbBorderColor =
         widget.thumbBorderColor?.resolve(activeStates) ??
-            _thumbBorderColor.resolve(activeStates);
+        _thumbBorderColor.resolve(activeStates);
     final Color effectiveInactiveThumbBorderColor =
         widget.thumbBorderColor?.resolve(inactiveStates) ??
-            _thumbBorderColor.resolve(inactiveStates);
+        _thumbBorderColor.resolve(inactiveStates);
 
     final Color effectiveActiveTrackBorderColor =
         widget.trackBorderColor?.resolve(activeStates) ??
-            _trackBorderColor.resolve(activeStates);
+        _trackBorderColor.resolve(activeStates);
     final Color effectiveInactiveTrackBorderColor =
         widget.trackBorderColor?.resolve(inactiveStates) ??
-            _trackBorderColor.resolve(inactiveStates);
+        _trackBorderColor.resolve(inactiveStates);
 
-    final Set<MaterialState> focusedStates = states..add(MaterialState.focused);
+    final Set<WidgetState> focusedStates = states..add(WidgetState.focused);
     final Color effectiveFocusOverlayColor =
         widget.overlayColor?.resolve(focusedStates) ??
-            widget.focusColor ??
-            theme.switchTheme.overlayColor?.resolve(focusedStates) ??
-            theme.focusColor;
+        widget.focusColor ??
+        theme.switchTheme.overlayColor?.resolve(focusedStates) ??
+        theme.focusColor;
 
-    final Set<MaterialState> hoveredStates = states..add(MaterialState.hovered);
+    final Set<WidgetState> hoveredStates = states..add(WidgetState.hovered);
     final Color effectiveHoverOverlayColor =
         widget.overlayColor?.resolve(hoveredStates) ??
-            widget.hoverColor ??
-            theme.switchTheme.overlayColor?.resolve(hoveredStates) ??
-            theme.hoverColor;
+        widget.hoverColor ??
+        theme.switchTheme.overlayColor?.resolve(hoveredStates) ??
+        theme.hoverColor;
 
-    final Set<MaterialState> activePressedStates = activeStates
-      ..add(MaterialState.pressed);
+    final Set<WidgetState> activePressedStates = activeStates
+      ..add(WidgetState.pressed);
     final Color effectiveActivePressedOverlayColor =
         widget.overlayColor?.resolve(activePressedStates) ??
-            theme.switchTheme.overlayColor?.resolve(activePressedStates) ??
-            effectiveActiveTrackColor.withAlpha(kRadialReactionAlpha);
+        theme.switchTheme.overlayColor?.resolve(activePressedStates) ??
+        effectiveActiveTrackColor.withAlpha(kRadialReactionAlpha);
 
-    final Set<MaterialState> inactivePressedStates = inactiveStates
-      ..add(MaterialState.pressed);
+    final Set<WidgetState> inactivePressedStates = inactiveStates
+      ..add(WidgetState.pressed);
     final Color effectiveInactivePressedOverlayColor =
         widget.overlayColor?.resolve(inactivePressedStates) ??
-            theme.switchTheme.overlayColor?.resolve(inactivePressedStates) ??
-            effectiveActiveTrackColor.withAlpha(kRadialReactionAlpha);
+        theme.switchTheme.overlayColor?.resolve(inactivePressedStates) ??
+        effectiveActiveTrackColor.withAlpha(kRadialReactionAlpha);
 
-    final MaterialStateProperty<MouseCursor> effectiveMouseCursor =
-        MaterialStateProperty.resolveWith<MouseCursor>(
-            (Set<MaterialState> states) {
-      return MaterialStateProperty.resolveAs<MouseCursor?>(
-              widget.mouseCursor, states) ??
-          theme.switchTheme.mouseCursor?.resolve(states) ??
-          MaterialStateProperty.resolveAs<MouseCursor>(
-              MaterialStateMouseCursor.clickable, states);
-    });
+    final WidgetStateProperty<MouseCursor> effectiveMouseCursor =
+        WidgetStateProperty.resolveWith<MouseCursor>((Set<WidgetState> states) {
+          return WidgetStateProperty.resolveAs<MouseCursor?>(
+                widget.mouseCursor,
+                states,
+              ) ??
+              theme.switchTheme.mouseCursor?.resolve(states) ??
+              WidgetStateProperty.resolveAs<MouseCursor>(
+                WidgetStateMouseCursor.clickable,
+                states,
+              );
+        });
 
     return Semantics(
       toggled: widget.value,
@@ -511,12 +513,13 @@ class _OneUISwitchState extends State<OneUISwitch>
             ..reactionColor = effectiveActivePressedOverlayColor
             ..hoverColor = effectiveHoverOverlayColor
             ..focusColor = effectiveFocusOverlayColor
-            ..splashRadius = widget.splashRadius ??
+            ..splashRadius =
+                widget.splashRadius ??
                 theme.switchTheme.splashRadius ??
                 kRadialReactionRadius
             ..downPosition = downPosition
-            ..isFocused = states.contains(MaterialState.focused)
-            ..isHovered = states.contains(MaterialState.hovered)
+            ..isFocused = states.contains(WidgetState.focused)
+            ..isHovered = states.contains(WidgetState.hovered)
             ..activeColor = effectiveActiveTrackColor
             ..inactiveColor = effectiveInactiveTrackColor
             ..thumbColor = effectiveThumbColor
@@ -693,17 +696,20 @@ class _SwitchPainter extends ToggleablePainter {
   ImageErrorListener? _cachedThumbErrorListener;
   BoxPainter? _cachedThumbPainter;
 
-  BoxDecoration _createDefaultThumbDecoration(Color color, Color borderColor,
-      ImageProvider? image, ImageErrorListener? errorListener) {
+  BoxDecoration _createDefaultThumbDecoration(
+    Color color,
+    Color borderColor,
+    ImageProvider? image,
+    ImageErrorListener? errorListener,
+  ) {
     return BoxDecoration(
-        color: color,
-        image: image == null
-            ? null
-            : DecorationImage(image: image, onError: errorListener),
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: borderColor,
-        ));
+      color: color,
+      image: image == null
+          ? null
+          : DecorationImage(image: image, onError: errorListener),
+      shape: BoxShape.circle,
+      border: Border.all(color: borderColor),
+    );
   }
 
   bool _isPainting = false;
@@ -731,12 +737,19 @@ class _SwitchPainter extends ToggleablePainter {
         break;
     }
 
-    final Color trackColor =
-        Color.lerp(inactiveTrackColor, activeTrackColor, currentValue)!;
+    final Color trackColor = Color.lerp(
+      inactiveTrackColor,
+      activeTrackColor,
+      currentValue,
+    )!;
     final Color trackBorderColor = Color.lerp(
-        inactiveTrackBorderColor, activeTrackBorderColor, currentValue)!;
-    final Color thumbBorderColor =
-        value ? activeThumbBorderColor : inactiveTrackBorderColor;
+      inactiveTrackBorderColor,
+      activeTrackBorderColor,
+      currentValue,
+    )!;
+    final Color thumbBorderColor = value
+        ? activeThumbBorderColor
+        : inactiveTrackBorderColor;
 
     // Blend the thumb color against a `surfaceColor` background in case the
 
@@ -746,8 +759,8 @@ class _SwitchPainter extends ToggleablePainter {
 
     final ImageErrorListener? thumbErrorListener = isEnabled
         ? (currentValue < 0.5
-            ? onInactiveThumbImageError
-            : onActiveThumbImageError)
+              ? onInactiveThumbImageError
+              : onActiveThumbImageError)
         : onInactiveThumbImageError;
 
     // Paint the track
@@ -764,14 +777,19 @@ class _SwitchPainter extends ToggleablePainter {
       _kTrackHeight,
     );
     final RRect trackRRect = RRect.fromRectAndRadius(
-        trackRect, const Radius.circular(_kTrackRadius));
+      trackRect,
+      const Radius.circular(_kTrackRadius),
+    );
     final Rect trackBorderRect = Rect.fromLTWH(
-        trackHorizontalPadding - .5,
-        (size.height - _kTrackBorderHeight) / 2.0,
-        size.width - 2.0 * trackHorizontalPadding + 1.0,
-        _kTrackHeight + 1.0);
+      trackHorizontalPadding - .5,
+      (size.height - _kTrackBorderHeight) / 2.0,
+      size.width - 2.0 * trackHorizontalPadding + 1.0,
+      _kTrackHeight + 1.0,
+    );
     final RRect trackBorderRRect = RRect.fromRectAndRadius(
-        trackBorderRect, const Radius.circular(_kTrackBorderRadius));
+      trackBorderRect,
+      const Radius.circular(_kTrackBorderRadius),
+    );
     canvas.drawRRect(trackBorderRRect, borderPaint);
     canvas.drawRRect(trackRRect, paint);
 
@@ -794,8 +812,11 @@ class _SwitchPainter extends ToggleablePainter {
         _cachedThumbImage = thumbImage;
         _cachedThumbErrorListener = thumbErrorListener;
         _cachedThumbPainter = _createDefaultThumbDecoration(
-                thumbColor, thumbBorderColor, thumbImage, thumbErrorListener)
-            .createBoxPainter(_handleDecorationChanged);
+          thumbColor,
+          thumbBorderColor,
+          thumbImage,
+          thumbErrorListener,
+        ).createBoxPainter(_handleDecorationChanged);
       }
       final BoxPainter thumbPainter = _cachedThumbPainter!;
 

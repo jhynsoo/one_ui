@@ -1,16 +1,15 @@
 import 'package:flutter/widgets.dart';
 
 class OneUIBottomNavigationBarItem {
-  const OneUIBottomNavigationBarItem({
-    this.title,
-    this.label,
-  }) : assert(title == null || label == null);
+  const OneUIBottomNavigationBarItem({this.title, this.label})
+    : assert(title == null || label == null);
 
   /// The title of the item.
   ///
   /// This field is deprecated, use [label] instead.
   @Deprecated(
-      'Use "label" instead, as it allows for an improved text-scaling experience. ')
+    'Use "label" instead, as it allows for an improved text-scaling experience. ',
+  )
   final Widget? title;
 
   /// The text label for this [OneUIBottomNavigationBarItem].

@@ -595,14 +595,22 @@ Future<T?> showMenu<T>({
   );
 }
 
+/// Builds an interactive trigger for a [OneUIPopupMenuButton].
+typedef OneUIPopupMenuButtonBuilder =
+    Widget Function(
+      BuildContext context,
+      VoidCallback? onPressed,
+      bool enableFeedback,
+    );
+
 /// Displays a menu when pressed and calls [onSelected] when the menu is dismissed
 /// because an item was selected. The value passed to [onSelected] is the value of
 /// the selected menu item.
 ///
-/// One of [child] or [icon] may be provided, but not both. If [icon] is provided,
-/// then [OneUIPopupMenuButton] behaves like an [OneUIIconButton].
+/// One of [buttonBuilder], [child], or [icon] may be provided. If [icon] is
+/// provided, then [OneUIPopupMenuButton] behaves like an [OneUIIconButton].
 ///
-/// If both are null, then a standard overflow icon is created (depending on the
+/// If all are null, then a standard overflow icon is created (depending on the
 /// platform).
 class OneUIPopupMenuButton<T> extends StatefulWidget {
   const OneUIPopupMenuButton({
@@ -614,6 +622,7 @@ class OneUIPopupMenuButton<T> extends StatefulWidget {
     this.tooltip,
     this.elevation,
     this.padding = const EdgeInsets.all(8.0),
+    this.buttonBuilder,
     this.child,
     this.icon,
     this.iconSize,
@@ -625,6 +634,10 @@ class OneUIPopupMenuButton<T> extends StatefulWidget {
   }) : assert(
          !(child != null && icon != null),
          'You can only pass [child] or [icon], not both.',
+       ),
+       assert(
+         buttonBuilder == null || (child == null && icon == null),
+         'You can only pass one of [buttonBuilder], [child], or [icon].',
        );
 
   /// Called when the button is pressed to create the items to show in the menu.
@@ -660,6 +673,14 @@ class OneUIPopupMenuButton<T> extends StatefulWidget {
   /// this button appears as the trailing element of a list item, it's useful to be able
   /// to set the padding to zero.
   final EdgeInsetsGeometry padding;
+
+  /// Builds a button that opens the popup menu.
+  ///
+  /// The supplied callback is null when [enabled] is false. The resolved
+  /// [enableFeedback] value is also supplied so the trigger can preserve this
+  /// button's feedback behavior. Use this when the trigger needs to own its
+  /// pressed, hover, focus, or splash appearance.
+  final OneUIPopupMenuButtonBuilder? buttonBuilder;
 
   /// If provided, [child] is the widget used for this button
   /// and the button will utilize an [InkWell] for taps.
@@ -769,12 +790,24 @@ class _OneUIPopupMenuButtonState<T> extends State<OneUIPopupMenuButton<T>> {
 
   @override
   Widget build(BuildContext context) {
+    assert(debugCheckHasMaterialLocalizations(context));
+
     final bool enableFeedback =
         widget.enableFeedback ??
         PopupMenuTheme.of(context).enableFeedback ??
         true;
 
-    assert(debugCheckHasMaterialLocalizations(context));
+    if (widget.buttonBuilder != null) {
+      return Tooltip(
+        message:
+            widget.tooltip ?? MaterialLocalizations.of(context).showMenuTooltip,
+        child: widget.buttonBuilder!(
+          context,
+          widget.enabled ? showButtonMenu : null,
+          enableFeedback,
+        ),
+      );
+    }
 
     if (widget.child != null) {
       return Tooltip(
@@ -794,6 +827,7 @@ class _OneUIPopupMenuButtonState<T> extends State<OneUIPopupMenuButton<T>> {
       splashRadius: 16,
       iconSize: 20,
       onPressed: widget.enabled ? showButtonMenu : null,
+      enableFeedback: enableFeedback,
       icon: widget.icon ?? const Icon(Icons.more_vert),
     );
   }

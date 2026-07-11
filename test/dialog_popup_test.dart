@@ -95,6 +95,43 @@ void main() {
       expectNoFlutterException(tester);
     });
 
+    testWidgets('button builder opens the menu from its supplied callback', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(const TestApp(home: _PopupHarness()));
+
+      await tester.tap(find.byKey(const Key('contained-popup-trigger')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Builder option'), findsOneWidget);
+      expectNoFlutterException(tester);
+    });
+
+    testWidgets('button builder receives feedback and disabled state', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(const TestApp(home: _PopupHarness()));
+
+      final one_ui.OneUIContainedButton enabledTrigger = tester.widget(
+        find.byKey(const Key('contained-popup-trigger')),
+      );
+      final one_ui.OneUIContainedButton disabledTrigger = tester.widget(
+        find.byKey(const Key('disabled-contained-popup-trigger')),
+      );
+
+      expect(enabledTrigger.style?.enableFeedback, isFalse);
+      expect(disabledTrigger.onPressed, isNull);
+
+      await tester.tap(
+        find.byKey(const Key('disabled-contained-popup-trigger')),
+      );
+      await tester.pump();
+
+      expect(find.text('Disabled builder option'), findsNothing);
+      expect(find.text('disabled builder builds:0'), findsOneWidget);
+      expectNoFlutterException(tester);
+    });
+
     testWidgets('showMenu returns a typed value', (WidgetTester tester) async {
       await tester.pumpWidget(const TestApp(home: _PopupHarness()));
 
@@ -195,6 +232,7 @@ class _PopupHarnessState extends State<_PopupHarness> {
   String selected = 'none';
   int canceled = 0;
   int disabledBuilds = 0;
+  int disabledBuilderBuilds = 0;
   int? rawResult;
 
   Future<void> _showRawMenu() async {
@@ -248,6 +286,52 @@ class _PopupHarnessState extends State<_PopupHarness> {
                 ],
           ),
           one_ui.OneUIPopupMenuButton<String>(
+            key: const Key('builder-popup'),
+            itemBuilder: (BuildContext context) =>
+                const <one_ui.OneUIPopupMenuItem<String>>[
+                  one_ui.OneUIPopupMenuItem<String>(
+                    value: 'builder',
+                    child: Text('Builder option'),
+                  ),
+                ],
+            enableFeedback: false,
+            buttonBuilder:
+                (
+                  BuildContext context,
+                  VoidCallback? onPressed,
+                  bool enableFeedback,
+                ) => one_ui.OneUIContainedButton(
+                  key: const Key('contained-popup-trigger'),
+                  onPressed: onPressed,
+                  style: ButtonStyle(enableFeedback: enableFeedback),
+                  child: const Text('Builder menu'),
+                ),
+          ),
+          one_ui.OneUIPopupMenuButton<String>(
+            key: const Key('disabled-builder-popup'),
+            enabled: false,
+            itemBuilder: (BuildContext context) {
+              disabledBuilderBuilds += 1;
+              return const <one_ui.OneUIPopupMenuItem<String>>[
+                one_ui.OneUIPopupMenuItem<String>(
+                  value: 'disabled-builder',
+                  child: Text('Disabled builder option'),
+                ),
+              ];
+            },
+            buttonBuilder:
+                (
+                  BuildContext context,
+                  VoidCallback? onPressed,
+                  bool enableFeedback,
+                ) => one_ui.OneUIContainedButton(
+                  key: const Key('disabled-contained-popup-trigger'),
+                  onPressed: onPressed,
+                  style: ButtonStyle(enableFeedback: enableFeedback),
+                  child: const Text('Disabled builder menu'),
+                ),
+          ),
+          one_ui.OneUIPopupMenuButton<String>(
             key: const Key('disabled-popup'),
             enabled: false,
             itemBuilder: (BuildContext context) {
@@ -268,6 +352,7 @@ class _PopupHarnessState extends State<_PopupHarness> {
           Text('selected:$selected'),
           Text('canceled:$canceled'),
           Text('disabled builds:$disabledBuilds'),
+          Text('disabled builder builds:$disabledBuilderBuilds'),
           Text('raw:${rawResult ?? 'none'}'),
         ],
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:one_ui/one_ui.dart' as one_ui;
 import 'package:one_ui_example/catalog.dart';
 
 void main() {
@@ -54,6 +55,31 @@ void main() {
     await tester.tap(find.byKey(CatalogKeys.themeMode));
     await tester.pumpAndSettle();
     expect(find.byTooltip('Use light theme'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('popup menu uses a contained button and still opens', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const MaterialApp(home: PopupMenusCatalogPage()));
+
+    final Finder popupButton = find.byKey(
+      CatalogKeys.widget(CatalogWidgetIds.popupMenuButton),
+    );
+    final Finder containedButton = find.descendant(
+      of: popupButton,
+      matching: find.byType(one_ui.OneUIContainedButton),
+    );
+    expect(containedButton, findsOneWidget);
+    expect(
+      find.ancestor(of: containedButton, matching: find.byType(InkWell)),
+      findsNothing,
+    );
+
+    await tester.tap(popupButton);
+    await tester.pumpAndSettle();
+
+    expect(find.text('First option'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

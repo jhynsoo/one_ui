@@ -770,17 +770,23 @@ class _PopupMenusCatalogPageState extends State<PopupMenusCatalogPage> {
                     child: Text('Second option'),
                   ),
                 ],
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Text('Open popup'),
-                  SizedBox(width: 8),
-                  Icon(Icons.arrow_drop_down),
-                ],
-              ),
-            ),
+            buttonBuilder:
+                (
+                  BuildContext context,
+                  VoidCallback? onPressed,
+                  bool enableFeedback,
+                ) => one_ui.OneUIContainedButton(
+                  onPressed: onPressed,
+                  style: ButtonStyle(enableFeedback: enableFeedback),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Text('Open popup'),
+                      SizedBox(width: 8),
+                      Icon(Icons.arrow_drop_down),
+                    ],
+                  ),
+                ),
           ),
         ),
         const SizedBox(height: 20),

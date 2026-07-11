@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:one_ui/src/effects/ink_ripple.dart';
+import 'package:one_ui/src/theme/theme.dart';
 
 class OneUIFlatButton extends ButtonStyleButton {
   const OneUIFlatButton({
@@ -22,12 +23,13 @@ class OneUIFlatButton extends ButtonStyleButton {
   ButtonStyle defaultStyleOf(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
+    final OneUIColorScheme oneUIColorScheme = OneUIColorScheme.of(context);
     final InteractiveInkFeatureFactory splashFactory = useOneUISplashFactory
         ? OneUIInkRipple.splashFactory
         : theme.splashFactory;
 
     return TextButton.styleFrom(
-      foregroundColor: colorScheme.primary,
+      foregroundColor: oneUIColorScheme.primaryDark,
       disabledForegroundColor: colorScheme.onSurface.withValues(alpha: 0.38),
       backgroundColor: Colors.transparent,
       shadowColor: theme.shadowColor,

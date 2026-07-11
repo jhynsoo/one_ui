@@ -1,6 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
+import '../../theme/theme.dart';
+
 const double _kTrackHeight = 16.0;
 const double _kTrackBorderHeight = _kTrackHeight + 1.0;
 const double _kTrackWidth = 33.0;
@@ -28,6 +30,9 @@ class OneUISwitch extends StatefulWidget {
     super.key,
     required this.value,
     required this.onChanged,
+    @Deprecated(
+      'Use OneUIThemeData.colorMode instead. This parameter is ignored.',
+    )
     this.useOneUIColor = false,
     this.activeColor,
     this.disabledThumbColor,
@@ -69,17 +74,19 @@ class OneUISwitch extends StatefulWidget {
   /// gets rebuilt.
   final ValueChanged<bool>? onChanged;
 
-  /// If true, set [activeColor] as `Color(0xff3e91ff)`.
+  /// This parameter is retained for source compatibility and is ignored.
   ///
-  /// Must not be null. Defaults to false.
+  /// Configure [OneUIThemeData.colorMode] on the ambient [ThemeData] instead.
+  @Deprecated(
+    'Use OneUIThemeData.colorMode instead. This parameter is ignored.',
+  )
   final bool useOneUIColor;
 
   /// The color to use when this switch is on.
   ///
-  /// Defaults to [ColorScheme.secondary].
+  /// Defaults to the active color resolved from [OneUIThemeData.colorMode].
   ///
-  /// If [useOneUIColor] returns true, OneUI Color will be used instead of this color.
-  ///  Else if [trackColor] returns a non-null color in the [WidgetState.selected]
+  /// If [trackColor] returns a non-null color in the [WidgetState.selected]
   /// state, it will be used instead of this color.
   final Color? activeColor;
 
@@ -110,16 +117,14 @@ class OneUISwitch extends StatefulWidget {
   ///  * [WidgetState.focused].
   ///  * [WidgetState.disabled].
   ///
-  /// If null, then the value of [activeColor] is used in the selected
-  /// state and [inactiveThumbColor] in the default state. If that is also null,
-  /// then the value of [SwitchThemeData.thumbColor] is used. If that is also
-  /// null, then the following colors are used:
+  /// If null, then the value of [SwitchThemeData.thumbColor] is used. If that
+  /// is also null, then the following colors are used:
   ///
   /// | State    | Light theme                       | Dark theme                        |
   /// |----------|-----------------------------------|-----------------------------------|
-  /// | Default  | `Colors.grey.shade50`             | `Colors.grey.shade400`            |
-  /// | Selected | [ColorScheme.secondary] | [ColorScheme.secondary] |
-  /// | Disabled | `Colors.grey.shade400`            | `Colors.grey.shade800`            |
+  /// | Default  | `Colors.white`                    | `Colors.white`                    |
+  /// | Selected | `Colors.white`                    | `Colors.white`                    |
+  /// | Disabled | `Color(0xfffafafa)`               | `Color(0xff828282)`               |
   final Color? thumbColor;
 
   /// The color of this [Switch]'s track.
@@ -233,7 +238,7 @@ class OneUISwitch extends StatefulWidget {
   /// [kRadialReactionAlpha], [focusColor] and [hoverColor] is used in the
   /// pressed, focused and hovered state. If that is also null,
   /// the value of [SwitchThemeData.overlayColor] is used. If that is
-  /// also null, then the value of [ColorScheme.secondary] with alpha
+  /// also null, then the resolved active color with alpha
   /// [kRadialReactionAlpha], [ThemeData.focusColor] and [ThemeData.hoverColor]
   /// is used in the pressed, focused and hovered state.
   final WidgetStateProperty<Color?>? overlayColor;
@@ -313,21 +318,30 @@ class _OneUISwitchState extends State<OneUISwitch>
   }
 
   WidgetStateProperty<Color> get _trackColor {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final ThemeData theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final OneUIColorScheme oneUIColorScheme = OneUIColorScheme.of(context);
 
     return WidgetStateProperty.resolveWith((Set<WidgetState> states) {
       if (states.contains(WidgetState.disabled)) {
+        final Color? themedColor = theme.switchTheme.trackColor?.resolve(
+          states,
+        );
+        if (themedColor != null) {
+          return themedColor;
+        }
         if (states.contains(WidgetState.selected)) {
           return isDark ? Colors.white10 : Colors.black12;
         }
         return Colors.transparent;
       }
       if (states.contains(WidgetState.selected)) {
-        return widget.useOneUIColor
-            ? const Color(0xff3e91ff)
-            : widget.activeColor ?? Theme.of(context).colorScheme.secondary;
+        return widget.activeColor ??
+            theme.switchTheme.trackColor?.resolve(states) ??
+            oneUIColorScheme.controlActivated;
       }
-      return Colors.transparent;
+      return theme.switchTheme.trackColor?.resolve(states) ??
+          Colors.transparent;
     });
   }
 
@@ -341,9 +355,8 @@ class _OneUISwitchState extends State<OneUISwitch>
         return isDark ? Colors.white10 : Colors.black12;
       }
       if (states.contains(WidgetState.selected)) {
-        return widget.useOneUIColor
-            ? const Color(0xff3e91ff)
-            : widget.activeColor ?? Theme.of(context).colorScheme.secondary;
+        return widget.activeColor ??
+            OneUIColorScheme.of(context).controlActivated;
       }
       return isDark ? Colors.white30 : black32;
     });
@@ -427,7 +440,12 @@ class _OneUISwitchState extends State<OneUISwitch>
     final Set<WidgetState> inactiveStates = states
       ..remove(WidgetState.selected);
     final Color effectiveThumbColor =
-        widget.thumbColor ?? _thumbColor.resolve(states);
+        widget.thumbColor ??
+        (states.contains(WidgetState.disabled)
+            ? widget.disabledThumbColor
+            : null) ??
+        theme.switchTheme.thumbColor?.resolve(states) ??
+        _thumbColor.resolve(states);
     final Color effectiveActiveTrackColor =
         widget.trackColor?.resolve(activeStates) ??
         _trackColor.resolve(activeStates);

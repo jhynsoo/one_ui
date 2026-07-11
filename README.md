@@ -34,6 +34,48 @@ flutter run
 - [Samsung Developers | One UI Design Guidelines](https://developer.samsung.com/one-ui/index.html)
 - [Samsung Design | One UI Design Guidelines](https://design.samsung.com/global/contents/one-ui/download/oneui_design_guide_eng.pdf)
 
+## Color theme
+
+One UI semantic colors are the default. If `OneUIThemeData` is omitted, One UI
+widgets use the official light or dark palette selected from the ambient
+`ThemeData.brightness`:
+
+```dart
+MaterialApp(
+  theme: ThemeData(
+    useMaterial3: true,
+    extensions: const <ThemeExtension<dynamic>>[
+      OneUIThemeData(),
+    ],
+  ),
+)
+```
+
+To use a custom or device-provided Material You palette, install that
+`ColorScheme` on the app theme and explicitly opt in. Configure both the light
+and dark themes when the app supports both brightness modes:
+
+```dart
+ThemeData materialYouTheme(ColorScheme colorScheme) {
+  return ThemeData(
+    useMaterial3: true,
+    colorScheme: colorScheme,
+    extensions: const <ThemeExtension<dynamic>>[
+      OneUIThemeData(colorMode: OneUIColorMode.materialYou),
+    ],
+  );
+}
+
+MaterialApp(
+  theme: materialYouTheme(lightColorScheme),
+  darkTheme: materialYouTheme(darkColorScheme),
+)
+```
+
+`OneUISlider.useOneUIColor` and `OneUISwitch.useOneUIColor` are deprecated and
+no longer select colors locally. Remove those arguments and configure
+`OneUIThemeData.colorMode` once at the application theme level instead.
+
 ## Widgets
 
 ### Bottom Navigation Bar

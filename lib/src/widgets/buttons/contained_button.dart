@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:one_ui/src/effects/ink_ripple.dart';
+import 'package:one_ui/src/theme/theme.dart';
 
 class OneUIContainedButton extends ButtonStyleButton {
   const OneUIContainedButton({
@@ -23,12 +24,13 @@ class OneUIContainedButton extends ButtonStyleButton {
   ButtonStyle defaultStyleOf(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
+    final OneUIColorScheme oneUIColorScheme = OneUIColorScheme.of(context);
     final InteractiveInkFeatureFactory splashFactory = useOneUISplashFactory
         ? OneUIInkRipple.splashFactory
         : theme.splashFactory;
 
     return styleFrom(
-      primary: colorScheme.primary,
+      primary: oneUIColorScheme.primaryDark,
       onPrimary: colorScheme.onPrimary,
       onSurface: colorScheme.onSurface,
       shadowColor: theme.shadowColor,

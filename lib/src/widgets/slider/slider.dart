@@ -10,6 +10,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart' show timeDilation;
 import 'package:flutter/services.dart';
 
+import '../../theme/theme.dart';
+
 class OneUISlider extends StatefulWidget {
   const OneUISlider({
     super.key,
@@ -29,6 +31,9 @@ class OneUISlider extends StatefulWidget {
     this.semanticFormatterCallback,
     this.focusNode,
     this.autofocus = false,
+    @Deprecated(
+      'Use OneUIThemeData.colorMode instead. This parameter is ignored.',
+    )
     this.useOneUIColor = false,
   }) : assert(min <= max),
        assert(value >= min && value <= max),
@@ -161,7 +166,12 @@ class OneUISlider extends StatefulWidget {
   /// {@macro flutter.widgets.Focus.autofocus}
   final bool autofocus;
 
-  /// If true, ignore other color options and apply the One UI default color.
+  /// This parameter is retained for source compatibility and is ignored.
+  ///
+  /// Configure [OneUIThemeData.colorMode] on the ambient [ThemeData] instead.
+  @Deprecated(
+    'Use OneUIThemeData.colorMode instead. This parameter is ignored.',
+  )
   final bool useOneUIColor;
 
   @override
@@ -191,12 +201,7 @@ class OneUISlider extends StatefulWidget {
     properties.add(DoubleProperty('max', max));
     properties.add(IntProperty('divisions', divisions));
     properties.add(StringProperty('label', label));
-    properties.add(
-      ColorProperty(
-        'activeColor',
-        useOneUIColor ? const Color(0xff0381fe) : activeColor,
-      ),
-    );
+    properties.add(ColorProperty('activeColor', activeColor));
     properties.add(ColorProperty('inactiveColor', inactiveColor));
     properties.add(
       ObjectFlagProperty<ValueChanged<double>>.has(
@@ -394,6 +399,7 @@ class _SliderState extends State<OneUISlider> with TickerProviderStateMixin {
     assert(debugCheckHasMediaQuery(context));
 
     final ThemeData theme = Theme.of(context);
+    final OneUIColorScheme oneUIColorScheme = OneUIColorScheme.of(context);
     SliderThemeData sliderTheme = SliderTheme.of(context);
 
     // If the widget has active or inactive colors specified, then we plug them
@@ -427,39 +433,30 @@ class _SliderState extends State<OneUISlider> with TickerProviderStateMixin {
     final Color valueIndicatorColor;
     if (valueIndicatorShape is RectangularSliderValueIndicatorShape) {
       valueIndicatorColor =
-          sliderTheme.valueIndicatorColor ??
-          Color.alphaBlend(
-            theme.colorScheme.onSurface.withValues(alpha: 0.60),
-            theme.colorScheme.surface.withValues(alpha: 0.90),
-          );
+          sliderTheme.valueIndicatorColor ?? oneUIColorScheme.primary;
     } else {
-      valueIndicatorColor = widget.useOneUIColor
-          ? const Color(0xff0381fe)
-          : widget.activeColor ??
-                sliderTheme.valueIndicatorColor ??
-                theme.colorScheme.primary;
+      valueIndicatorColor =
+          widget.activeColor ??
+          sliderTheme.valueIndicatorColor ??
+          oneUIColorScheme.primary;
     }
 
     sliderTheme = sliderTheme.copyWith(
       trackHeight: sliderTheme.trackHeight ?? defaultTrackHeight,
-      activeTrackColor: widget.useOneUIColor
-          ? const Color(0xff0381fe)
-          : widget.activeColor ??
-                sliderTheme.activeTrackColor ??
-                theme.colorScheme.primary,
-      inactiveTrackColor: widget.useOneUIColor
-          ? const Color(0xff0381fe).withValues(alpha: 0.24)
-          : widget.inactiveColor ??
-                sliderTheme.inactiveTrackColor ??
-                theme.colorScheme.primary.withValues(alpha: 0.24),
-      disabledActiveTrackColor: widget.useOneUIColor
-          ? const Color(0xffd2d2d2)
-          : sliderTheme.disabledActiveTrackColor ??
-                theme.colorScheme.onSurface.withValues(alpha: 0.32),
-      disabledInactiveTrackColor: widget.useOneUIColor
-          ? const Color(0xff0381fe).withValues(alpha: 0.24)
-          : sliderTheme.disabledInactiveTrackColor ??
-                theme.colorScheme.primary.withValues(alpha: 0.24),
+      activeTrackColor:
+          widget.activeColor ??
+          sliderTheme.activeTrackColor ??
+          oneUIColorScheme.primary,
+      inactiveTrackColor:
+          widget.inactiveColor ??
+          sliderTheme.inactiveTrackColor ??
+          theme.colorScheme.primary.withValues(alpha: 0.24),
+      disabledActiveTrackColor:
+          sliderTheme.disabledActiveTrackColor ??
+          theme.colorScheme.onSurface.withValues(alpha: 0.32),
+      disabledInactiveTrackColor:
+          sliderTheme.disabledInactiveTrackColor ??
+          theme.colorScheme.primary.withValues(alpha: 0.24),
       activeTickMarkColor:
           widget.inactiveColor ??
           sliderTheme.activeTickMarkColor ??
@@ -474,18 +471,16 @@ class _SliderState extends State<OneUISlider> with TickerProviderStateMixin {
       disabledInactiveTickMarkColor:
           sliderTheme.disabledInactiveTickMarkColor ??
           theme.colorScheme.onSurface.withValues(alpha: 0.12),
-      thumbColor: widget.useOneUIColor
-          ? const Color(0xff0381fe)
-          : widget.activeColor ??
-                sliderTheme.thumbColor ??
-                theme.colorScheme.primary,
-      disabledThumbColor: widget.useOneUIColor
-          ? const Color(0xffd2d2d2)
-          : sliderTheme.disabledThumbColor ??
-                Color.alphaBlend(
-                  theme.colorScheme.onSurface.withValues(alpha: .38),
-                  theme.colorScheme.surface,
-                ),
+      thumbColor:
+          widget.activeColor ??
+          sliderTheme.thumbColor ??
+          oneUIColorScheme.primary,
+      disabledThumbColor:
+          sliderTheme.disabledThumbColor ??
+          Color.alphaBlend(
+            theme.colorScheme.onSurface.withValues(alpha: .38),
+            theme.colorScheme.surface,
+          ),
       overlayColor:
           sliderTheme.overlayColor ??
           theme.colorScheme.onSurface.withValues(alpha: 0.12),

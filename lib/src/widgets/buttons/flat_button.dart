@@ -64,7 +64,7 @@ EdgeInsetsGeometry _scaledPadding(BuildContext context) {
   final double defaultFontSize =
       Theme.of(context).textTheme.labelLarge?.fontSize ?? 14.0;
   final double effectiveTextScale =
-      MediaQuery.textScalerOf(context).scale(defaultFontSize) / 14.0;
+      MediaQuery.textScalerOf(context).scale(defaultFontSize) / defaultFontSize;
   return ButtonStyleButton.scaledPadding(
     const EdgeInsets.all(8),
     const EdgeInsets.symmetric(horizontal: 8),

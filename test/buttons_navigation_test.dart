@@ -108,6 +108,54 @@ void main() {
       expectNoFlutterException(tester);
     });
 
+    testWidgets('themed font size does not change default button padding', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData(
+            textTheme: const TextTheme(labelLarge: TextStyle(fontSize: 20)),
+          ),
+          home: Scaffold(
+            body: Column(
+              children: <Widget>[
+                one_ui.OneUIContainedButton(
+                  key: const Key('contained-themed-font'),
+                  onPressed: () {},
+                  child: const Text('Contained'),
+                ),
+                one_ui.OneUIFlatButton(
+                  key: const Key('flat-themed-font'),
+                  onPressed: () {},
+                  child: const Text('Flat'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      final Finder contained = find.byKey(const Key('contained-themed-font'));
+      final Finder flat = find.byKey(const Key('flat-themed-font'));
+
+      expect(
+        tester
+            .widget<one_ui.OneUIContainedButton>(contained)
+            .defaultStyleOf(tester.element(contained))
+            .padding
+            ?.resolve(<WidgetState>{}),
+        const EdgeInsets.symmetric(horizontal: 16),
+      );
+      expect(
+        tester
+            .widget<one_ui.OneUIFlatButton>(flat)
+            .defaultStyleOf(tester.element(flat))
+            .padding
+            ?.resolve(<WidgetState>{}),
+        const EdgeInsets.all(8),
+      );
+    });
+
     testWidgets('exposes enabled and disabled button semantics', (
       WidgetTester tester,
     ) async {

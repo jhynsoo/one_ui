@@ -450,13 +450,13 @@ class _SliderState extends State<OneUISlider> with TickerProviderStateMixin {
       inactiveTrackColor:
           widget.inactiveColor ??
           sliderTheme.inactiveTrackColor ??
-          theme.colorScheme.primary.withValues(alpha: 0.24),
+          oneUIColorScheme.primary.withValues(alpha: 0.24),
       disabledActiveTrackColor:
           sliderTheme.disabledActiveTrackColor ??
           theme.colorScheme.onSurface.withValues(alpha: 0.32),
       disabledInactiveTrackColor:
           sliderTheme.disabledInactiveTrackColor ??
-          theme.colorScheme.primary.withValues(alpha: 0.24),
+          oneUIColorScheme.primary.withValues(alpha: 0.24),
       activeTickMarkColor:
           widget.inactiveColor ??
           sliderTheme.activeTickMarkColor ??
@@ -464,7 +464,7 @@ class _SliderState extends State<OneUISlider> with TickerProviderStateMixin {
       inactiveTickMarkColor:
           widget.activeColor ??
           sliderTheme.inactiveTickMarkColor ??
-          theme.colorScheme.primary.withValues(alpha: 0.54),
+          oneUIColorScheme.primary.withValues(alpha: 0.54),
       disabledActiveTickMarkColor:
           sliderTheme.disabledActiveTickMarkColor ??
           theme.colorScheme.onPrimary.withValues(alpha: 0.12),

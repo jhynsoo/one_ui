@@ -29,6 +29,18 @@ void main() {
             sliderShape.sliderTheme.activeTrackColor,
             expectedColors.primary,
           );
+          expect(
+            sliderShape.sliderTheme.inactiveTrackColor,
+            expectedColors.primary.withValues(alpha: 0.24),
+          );
+          expect(
+            sliderShape.sliderTheme.disabledInactiveTrackColor,
+            expectedColors.primary.withValues(alpha: 0.24),
+          );
+          expect(
+            sliderShape.sliderTheme.inactiveTickMarkColor,
+            expectedColors.primary.withValues(alpha: 0.54),
+          );
           expect(sliderShape.sliderTheme.thumbColor, expectedColors.primary);
           expect(
             sliderShape.sliderTheme.valueIndicatorColor,
@@ -61,6 +73,18 @@ void main() {
           );
 
           expect(sliderShape.sliderTheme.activeTrackColor, _materialPrimary);
+          expect(
+            sliderShape.sliderTheme.inactiveTrackColor,
+            _materialPrimary.withValues(alpha: 0.24),
+          );
+          expect(
+            sliderShape.sliderTheme.disabledInactiveTrackColor,
+            _materialPrimary.withValues(alpha: 0.24),
+          );
+          expect(
+            sliderShape.sliderTheme.inactiveTickMarkColor,
+            _materialPrimary.withValues(alpha: 0.54),
+          );
           expect(sliderShape.sliderTheme.thumbColor, _materialPrimary);
           expect(sliderShape.sliderTheme.valueIndicatorColor, _materialPrimary);
           expect(_switchPainter(tester).activeTrackColor, _materialPrimary);

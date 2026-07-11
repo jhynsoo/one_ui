@@ -4,6 +4,10 @@
 * Migrate widgets to current Material, theming, color, and text scaling APIs.
 * Add a complete widget catalog and automated compatibility coverage.
 * Refresh the Android, iOS, and web example projects.
+* Add official One UI semantic color roles for light and dark themes.
+* Add an explicit Material You color mode that uses the app's `ColorScheme`.
+* Add dynamic color and seeded fallback controls to the example catalog.
+* Deprecate widget-local One UI color switches in favor of theme-level color mode.
 
 ## 0.0.1
 

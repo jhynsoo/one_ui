@@ -1,3 +1,4 @@
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:one_ui/one_ui.dart' as one_ui;
 
@@ -57,6 +58,9 @@ abstract final class CatalogKeys {
   );
   static const ValueKey<String> themeMode = ValueKey<String>(
     'catalog.home.theme-mode',
+  );
+  static const ValueKey<String> materialYouMode = ValueKey<String>(
+    'catalog.home.material-you-mode',
   );
   static const ValueKey<String> viewScroll = ValueKey<String>(
     'catalog.view.scroll',
@@ -178,35 +182,79 @@ class OneUICatalogApp extends StatefulWidget {
 }
 
 class _OneUICatalogAppState extends State<OneUICatalogApp> {
-  ThemeMode _themeMode = ThemeMode.light;
+  static const Color _materialYouFallbackSeed = Color(0xff0381fe);
 
-  ThemeData _theme(Brightness brightness) {
+  ThemeMode _themeMode = ThemeMode.light;
+  bool _materialYouEnabled = false;
+
+  ThemeData _theme({
+    required Brightness brightness,
+    required ColorScheme? dynamicColorScheme,
+  }) {
+    final ColorScheme? colorScheme = _materialYouEnabled
+        ? dynamicColorScheme ??
+              ColorScheme.fromSeed(
+                seedColor: _materialYouFallbackSeed,
+                brightness: brightness,
+              )
+        : null;
+
     return ThemeData(
       useMaterial3: true,
       brightness: brightness,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xff0381fe),
-        brightness: brightness,
-      ),
+      colorScheme: colorScheme,
+      extensions: <ThemeExtension<dynamic>>[
+        one_ui.OneUIThemeData(
+          colorMode: _materialYouEnabled
+              ? one_ui.OneUIColorMode.materialYou
+              : one_ui.OneUIColorMode.oneUI,
+        ),
+      ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'One UI Widget Catalog',
-      debugShowCheckedModeBanner: false,
-      theme: _theme(Brightness.light),
-      darkTheme: _theme(Brightness.dark),
-      themeMode: _themeMode,
-      home: CatalogHomePage(
-        darkMode: _themeMode == ThemeMode.dark,
-        onThemeModeChanged: (bool darkMode) {
-          setState(() {
-            _themeMode = darkMode ? ThemeMode.dark : ThemeMode.light;
-          });
-        },
-      ),
+    return DynamicColorBuilder(
+      builder:
+          (
+            ColorScheme? lightDynamicColorScheme,
+            ColorScheme? darkDynamicColorScheme,
+          ) {
+            final bool darkMode = _themeMode == ThemeMode.dark;
+            final bool currentDynamicColorAvailable = darkMode
+                ? darkDynamicColorScheme != null
+                : lightDynamicColorScheme != null;
+
+            return MaterialApp(
+              title: 'One UI Widget Catalog',
+              debugShowCheckedModeBanner: false,
+              theme: _theme(
+                brightness: Brightness.light,
+                dynamicColorScheme: lightDynamicColorScheme,
+              ),
+              darkTheme: _theme(
+                brightness: Brightness.dark,
+                dynamicColorScheme: darkDynamicColorScheme,
+              ),
+              themeMode: _themeMode,
+              home: CatalogHomePage(
+                darkMode: darkMode,
+                materialYouEnabled: _materialYouEnabled,
+                materialYouUsesDynamicColor: currentDynamicColorAvailable,
+                onThemeModeChanged: (bool darkMode) {
+                  setState(() {
+                    _themeMode = darkMode ? ThemeMode.dark : ThemeMode.light;
+                  });
+                },
+                onMaterialYouChanged: (bool enabled) {
+                  setState(() {
+                    _materialYouEnabled = enabled;
+                  });
+                },
+              ),
+            );
+          },
     );
   }
 }
@@ -214,12 +262,31 @@ class _OneUICatalogAppState extends State<OneUICatalogApp> {
 class CatalogHomePage extends StatelessWidget {
   const CatalogHomePage({
     required this.darkMode,
+    required this.materialYouEnabled,
+    required this.materialYouUsesDynamicColor,
     required this.onThemeModeChanged,
+    required this.onMaterialYouChanged,
     super.key,
   });
 
   final bool darkMode;
+  final bool materialYouEnabled;
+  final bool materialYouUsesDynamicColor;
   final ValueChanged<bool> onThemeModeChanged;
+  final ValueChanged<bool> onMaterialYouChanged;
+
+  String get _statusLabel {
+    final String theme = darkMode ? 'dark' : 'light';
+    final String materialYou = switch ((
+      materialYouEnabled,
+      materialYouUsesDynamicColor,
+    )) {
+      (false, _) => 'off',
+      (true, true) => 'on (dynamic)',
+      (true, false) => 'on (seed fallback)',
+    };
+    return 'Theme: $theme · Material You: $materialYou · 8 sections';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -238,19 +305,32 @@ class CatalogHomePage extends StatelessWidget {
       body: ListView.separated(
         key: CatalogKeys.homeList,
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-        itemCount: catalogSections.length + 1,
+        itemCount: catalogSections.length + 2,
         separatorBuilder: (_, _) => const SizedBox(height: 8),
         itemBuilder: (BuildContext context, int index) {
           if (index == 0) {
             return _StatusCard(
               key: CatalogKeys.homeStatus,
-              label: darkMode
-                  ? 'Theme: dark · 8 sections'
-                  : 'Theme: light · 8 sections',
+              label: _statusLabel,
             );
           }
 
-          final CatalogSection section = catalogSections[index - 1];
+          if (index == 1) {
+            return Card(
+              clipBehavior: Clip.antiAlias,
+              child: SwitchListTile(
+                key: CatalogKeys.materialYouMode,
+                title: const Text('Material You'),
+                subtitle: const Text(
+                  'Use the device palette when available, or a seeded fallback.',
+                ),
+                value: materialYouEnabled,
+                onChanged: onMaterialYouChanged,
+              ),
+            );
+          }
+
+          final CatalogSection section = catalogSections[index - 2];
           return Card(
             clipBehavior: Clip.antiAlias,
             child: ListTile(
@@ -830,7 +910,6 @@ class _SwitchesCatalogPageState extends State<SwitchesCatalogPage> {
             trailing: one_ui.OneUISwitch(
               key: CatalogKeys.widget(CatalogWidgetIds.switchControl),
               value: _enabledValue,
-              useOneUIColor: true,
               onChanged: (bool value) {
                 setState(() {
                   _enabledValue = value;
@@ -871,7 +950,6 @@ class _SlidersCatalogPageState extends State<SlidersCatalogPage> {
         one_ui.OneUISlider(
           key: CatalogKeys.widget(CatalogWidgetIds.slider),
           value: _continuousValue,
-          useOneUIColor: true,
           semanticFormatterCallback: (double value) =>
               '${(value * 100).round()} percent',
           onChangeStart: (_) {

@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:one_ui_example/catalog.dart';
@@ -24,6 +24,25 @@ void main() {
     debugPrint('Catalog integration: app launched');
     await _pumpFrames(tester);
     debugPrint('Catalog integration: home settled');
+    _expectNoException(tester);
+
+    await tester.tap(find.byKey(CatalogKeys.materialYouMode));
+    await _pumpFrames(tester);
+    expect(
+      tester
+          .widget<SwitchListTile>(find.byKey(CatalogKeys.materialYouMode))
+          .value,
+      isTrue,
+    );
+    _expectNoException(tester);
+    await tester.tap(find.byKey(CatalogKeys.materialYouMode));
+    await _pumpFrames(tester);
+    expect(
+      tester
+          .widget<SwitchListTile>(find.byKey(CatalogKeys.materialYouMode))
+          .value,
+      isFalse,
+    );
     _expectNoException(tester);
 
     await _openSection(

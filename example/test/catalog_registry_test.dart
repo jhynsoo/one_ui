@@ -1,9 +1,13 @@
+import 'package:dynamic_color/samples.dart';
+import 'package:dynamic_color/test_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:one_ui/one_ui.dart' as one_ui;
 import 'package:one_ui_example/catalog.dart';
 
 void main() {
+  setUp(DynamicColorTestingUtils.setMockDynamicColors);
+
   test('catalog registry covers every required public widget exactly once', () {
     final List<String> declaredWidgetIds = catalogSections
         .expand((CatalogSection section) => section.widgetIds)
@@ -35,6 +39,14 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(CatalogKeys.homeStatus), findsOneWidget);
+    expect(
+      find.text('Theme: light · Material You: off · 8 sections'),
+      findsOneWidget,
+    );
+    expect(
+      _catalogTheme(tester).extension<one_ui.OneUIThemeData>()?.colorMode,
+      one_ui.OneUIColorMode.oneUI,
+    );
     expect(tester.takeException(), isNull);
 
     for (final CatalogSection section in catalogSections) {
@@ -56,6 +68,140 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byTooltip('Use light theme'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Material You uses the seed fallback in light and dark modes', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const OneUICatalogApp());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(CatalogKeys.materialYouMode));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Theme: light · Material You: on (seed fallback) · 8 sections'),
+      findsOneWidget,
+    );
+    expect(
+      _catalogTheme(tester).colorScheme.primary,
+      ColorScheme.fromSeed(seedColor: const Color(0xff0381fe)).primary,
+    );
+    expect(
+      _catalogTheme(tester).extension<one_ui.OneUIThemeData>()?.colorMode,
+      one_ui.OneUIColorMode.materialYou,
+    );
+
+    await tester.tap(find.byKey(CatalogKeys.themeMode));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Theme: dark · Material You: on (seed fallback) · 8 sections'),
+      findsOneWidget,
+    );
+    expect(
+      _catalogTheme(tester).colorScheme.primary,
+      ColorScheme.fromSeed(
+        seedColor: const Color(0xff0381fe),
+        brightness: Brightness.dark,
+      ).primary,
+    );
+
+    await tester.tap(find.byKey(CatalogKeys.materialYouMode));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Theme: dark · Material You: off · 8 sections'),
+      findsOneWidget,
+    );
+    expect(
+      _catalogTheme(tester).extension<one_ui.OneUIThemeData>()?.colorMode,
+      one_ui.OneUIColorMode.oneUI,
+    );
+  });
+
+  testWidgets('Material You uses mocked dynamic light and dark schemes', (
+    WidgetTester tester,
+  ) async {
+    DynamicColorTestingUtils.setMockDynamicColors(
+      corePalette: SampleCorePalettes.green,
+    );
+    await tester.pumpWidget(const OneUICatalogApp());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(CatalogKeys.materialYouMode));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Theme: light · Material You: on (dynamic) · 8 sections'),
+      findsOneWidget,
+    );
+    expect(
+      _catalogTheme(tester).colorScheme,
+      SampleColorSchemes.green(Brightness.light),
+    );
+
+    await tester.tap(find.byKey(CatalogKeys.themeMode));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Theme: dark · Material You: on (dynamic) · 8 sections'),
+      findsOneWidget,
+    );
+    expect(
+      _catalogTheme(tester).colorScheme,
+      SampleColorSchemes.green(Brightness.dark),
+    );
+  });
+
+  testWidgets('theme choices remain selected after section navigation', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const OneUICatalogApp());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(CatalogKeys.materialYouMode));
+    await tester.pumpAndSettle();
+    final Finder buttonsSection = find.byKey(
+      CatalogKeys.openSection(CatalogSectionIds.buttons),
+    );
+    await tester.scrollUntilVisible(
+      buttonsSection,
+      240,
+      scrollable: find.descendant(
+        of: find.byKey(CatalogKeys.homeList),
+        matching: find.byType(Scrollable),
+      ),
+    );
+    await tester.tap(buttonsSection);
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(CatalogKeys.page(CatalogSectionIds.buttons)),
+      findsOneWidget,
+    );
+
+    tester.state<NavigatorState>(find.byType(Navigator).first).pop();
+    await tester.pumpAndSettle();
+    tester
+        .state<ScrollableState>(
+          find.descendant(
+            of: find.byKey(CatalogKeys.homeList),
+            matching: find.byType(Scrollable),
+          ),
+        )
+        .position
+        .jumpTo(0);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Theme: light · Material You: on (seed fallback) · 8 sections'),
+      findsOneWidget,
+    );
+    expect(
+      tester
+          .widget<SwitchListTile>(find.byKey(CatalogKeys.materialYouMode))
+          .value,
+      isTrue,
+    );
   });
 
   testWidgets('popup menu uses a contained button and still opens', (
@@ -82,4 +228,8 @@ void main() {
     expect(find.text('First option'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+}
+
+ThemeData _catalogTheme(WidgetTester tester) {
+  return Theme.of(tester.element(find.byKey(CatalogKeys.homeStatus)));
 }

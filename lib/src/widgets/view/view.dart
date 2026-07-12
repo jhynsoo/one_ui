@@ -7,6 +7,9 @@ const double _kTabletExpandedAppBarHeightFactor = 0.1878;
 const BorderRadius _kRadius = BorderRadius.all(Radius.circular(26.0));
 
 class OneUIView extends StatefulWidget {
+  /// Creates a One UI scroll view with a collapsible app bar.
+  ///
+  /// Exactly one of [child] or [slivers] must be provided.
   const OneUIView({
     super.key,
     required this.title,
@@ -24,87 +27,93 @@ class OneUIView extends StatefulWidget {
     this.slivers,
     this.globalKey,
     this.initCollapsed = false,
-  }) : assert(child != null || slivers != null),
-       assert(expandedHeight == null || expandedHeightRatio == null);
+  }) : assert(
+         (child == null) != (slivers == null),
+         'Exactly one of child or slivers must be provided.',
+       ),
+       assert(
+         expandedHeight == null || expandedHeightRatio == null,
+         'expandedHeight and expandedHeightRatio cannot both be provided.',
+       ),
+       assert(
+         actionSpacing == null || actionSpacing >= 0,
+         'actionSpacing must be non-negative.',
+       );
 
-  /// The text to display on expanded app bar.
+  /// The widget displayed in the expanded app bar.
   final Widget? largeTitle;
 
-  /// The style to use for large title text.
+  /// The style to use for large title text when [useOneUITextStyle] is true.
   final TextStyle? largeTitleTextStyle;
 
-  /// The text to display on collapsed app bar.
-  /// If null, it shows [largeTitle].
+  /// The widget displayed in the collapsed app bar.
+  ///
+  /// [largeTitle] falls back to this widget when it is null.
   final Widget title;
 
   /// {@macro oneui.appbar.actions}
   ///
-  /// This property is used to configure an [OneUIAppBar].
+  /// This property is used to configure a [OneUIAppBar].
   final List<Widget>? actions;
 
   /// {@macro oneui.appbar.automaticallyImplyLeading}
   ///
-  /// This property is used to configure an [OneUIAppBar].
+  /// This property is used to configure a [OneUIAppBar].
   final bool automaticallyImplyLeading;
 
-  /// If true, use default One UI text style.
+  /// Whether to apply the default One UI text style to [largeTitle].
   final bool useOneUITextStyle;
 
-  /// The size of the app bar when it is fully expanded.
+  /// The height of the app bar when it is fully expanded.
   ///
   /// {@template oneui.view.expandedHeight}
-  /// This height should be big
-  /// enough to accommodate whatever that widget contains.
+  /// The value should be large enough to accommodate the expanded title.
   ///
-  /// This does not include the status bar height (which will be automatically
-  /// included if [primary] is true).
+  /// Do not set both [expandedHeight] and [expandedHeightRatio]. When both are
+  /// null, the default is calculated from the screen dimensions:
   ///
-  /// Either [expandedHeight] or [expandedHeightRatio] must be null.
-  ///
-  /// | Ratation  | Phone                                 | Tablet                                |
-  /// |-----------|---------------------------------------|---------------------------------------|
-  /// | Portrait  | 0.3976 * [MediaQueryData.size.height] | 0.1878 * [MediaQueryData.size.height] |
-  /// | Landscape | [collapsedHeight]                     | 0.1878 * [MediaQueryData.size.height] |
+  /// * At widths up to 600 logical pixels, the height is 39.76% of the screen
+  ///   height.
+  /// * Above 600 logical pixels in both dimensions, the height is 18.78% of the
+  ///   screen height.
+  /// * Above 600 logical pixels wide but no more than 600 logical pixels high,
+  ///   the height is [collapsedHeight].
   /// {@endtemplate}
   final double? expandedHeight;
 
-  /// The ratio of the app bar
-  /// to screen height when it is fully expanded.
+  /// The ratio of the expanded app-bar height to the screen height.
   ///
   /// {@macro oneui.view.expandedHeight}
   final double? expandedHeightRatio;
 
-  /// Defines the height of the app bar when it is collapsed.
+  /// The height of the app bar when it is collapsed.
   ///
-  /// By default, the collapsed height is [toolbarHeight]. If [bottom] widget is
-  /// specified, then its height from [PreferredSizeWidget.preferredSize] is
-  /// added to the height. If [primary] is true, then the [MediaQuery] top
-  /// padding, [EdgeInsets.top] of [MediaQueryData.padding], is added as well.
-  ///
-  /// If [pinned] and [floating] are true, with [bottom] set, the default
-  /// collapsed height is only the height of [PreferredSizeWidget.preferredSize]
-  /// with the [MediaQuery] top padding.
+  /// Defaults to [kToolbarHeight].
   final double collapsedHeight;
 
-  /// The space between [actions].
+  /// The horizontal space inserted between adjacent [actions].
+  ///
+  /// No additional spacing is inserted when this is null. The value must be
+  /// non-negative.
   final double? actionSpacing;
 
-  /// The background color for app bar.
+  /// The background color of the app bar.
   final Color? backgroundColor;
 
-  /// The widget below this widget in the tree.
-  /// One of [child] and [slivers] must be null and the other must not be null.
+  /// The scrollable body displayed below the app bar.
+  ///
+  /// Exactly one of [child] or [slivers] must be provided.
   final Widget? child;
 
-  /// The slivers to place inside the viewport.
-  /// One of [child] and [slivers] must be null and the other must not be null.
+  /// The slivers used to build the scrollable body below the app bar.
+  ///
+  /// Exactly one of [child] or [slivers] must be provided.
   final List<Widget>? slivers;
 
-  /// If true, display a default collapsed app bar.
+  /// Whether the view should initially display its collapsed app bar.
   final bool initCollapsed;
 
-  /// The globalKey that is used to get innerScrollController
-  /// of [NestedScrollViewState].
+  /// The key used to access the view's [NestedScrollViewState].
   final GlobalKey<NestedScrollViewState>? globalKey;
 
   @override
@@ -177,6 +186,9 @@ class _OneUIViewState extends State<OneUIView> {
         scrollViewState.innerController.position.pixels == 0 &&
         !outerController.position.atEdge) {
       final range = expandedHeight - collapsedHeight;
+      if (range <= 0) {
+        return false;
+      }
       final snapOffset = (outerController.offset / range) > 0.5 ? range : 0.0;
 
       Future.microtask(() async => _snapAppBar(outerController, snapOffset));
@@ -185,9 +197,12 @@ class _OneUIViewState extends State<OneUIView> {
   }
 
   double _expandRatio(BoxConstraints constraints) {
-    double expandRatio =
-        (constraints.maxHeight - collapsedHeight) /
-        (expandedHeight - collapsedHeight);
+    final double range = expandedHeight - collapsedHeight;
+    if (range <= 0) {
+      return 0.0;
+    }
+
+    double expandRatio = (constraints.maxHeight - collapsedHeight) / range;
 
     if (expandRatio > 1.0) return 1.0;
     if (expandRatio < 0.0) return 0.0;
@@ -239,10 +254,28 @@ class _OneUIViewState extends State<OneUIView> {
             child: widget.title,
           ),
           centerTitle: false,
-          actions: widget.actions,
+          actions: _spacedActions,
         ),
       ),
     );
+  }
+
+  List<Widget>? get _spacedActions {
+    final List<Widget>? actions = widget.actions;
+    final double? spacing = widget.actionSpacing;
+    if (actions == null ||
+        actions.length < 2 ||
+        spacing == null ||
+        spacing == 0) {
+      return actions;
+    }
+
+    return <Widget>[
+      for (int index = 0; index < actions.length; index++) ...<Widget>[
+        if (index > 0) SizedBox(width: spacing),
+        actions[index],
+      ],
+    ];
   }
 
   List<Widget> _appBar(BuildContext context, bool innerBoxIsScrolled) {

@@ -41,34 +41,44 @@ class OneUIBottomNavigationBar extends StatefulWidget {
 
   /// The value of [selectedItemColor].
   ///
-  /// This getter only exists for backwards compatibility, the
-  /// [selectedItemColor] property is preferred.
+  /// This alias is retained for backward compatibility. Prefer
+  /// [selectedItemColor].
   Color? get fixedColor => selectedItemColor;
 
-  /// The color of the [BottomNavigationBar] itself.
+  /// The color of the [OneUIBottomNavigationBar] itself.
+  ///
+  /// If null, [BottomNavigationBarThemeData.backgroundColor] is used, falling
+  /// back to [ThemeData.canvasColor].
   final Color? backgroundColor;
 
   /// The color of the selected [OneUIBottomNavigationBarItem.label].
   ///
-  /// If null then the [ThemeData.primaryColor] is used.
+  /// If null, [BottomNavigationBarThemeData.selectedItemColor] is used, falling
+  /// back to [TextTheme.bodyLarge]'s color.
   final Color? selectedItemColor;
 
-  /// The color of the unselected [OneUIBottomNavigationBarItem.label]s.
+  /// The color of unselected item labels.
   ///
-  /// If null then the [ThemeData.unselectedWidgetColor]'s color is used.
+  /// If null, [BottomNavigationBarThemeData.unselectedItemColor] is used,
+  /// falling back to [ThemeData.unselectedWidgetColor].
   final Color? unselectedItemColor;
 
   /// The [TextStyle] of the [OneUIBottomNavigationBarItem] labels when they are
   /// selected.
+  ///
+  /// If null, [BottomNavigationBarThemeData.selectedLabelStyle] is used.
   final TextStyle? selectedLabelStyle;
 
   /// The [TextStyle] of the [OneUIBottomNavigationBarItem] labels when they are not
   /// selected.
+  ///
+  /// If null, [BottomNavigationBarThemeData.unselectedLabelStyle] is used.
   final TextStyle? unselectedLabelStyle;
 
-  /// The font size of the [OneUIBottomNavigationBarItem] labels.
+  /// The fallback font size of the [OneUIBottomNavigationBarItem] labels.
   ///
-  /// Defaults to `14.0`.
+  /// This value is used only when the effective label style has no font size.
+  /// Defaults to `14.0` and must be non-negative.
   final double fontSize;
 
   /// The cursor for a mouse pointer when it enters or is hovering over the
@@ -78,6 +88,9 @@ class OneUIBottomNavigationBar extends StatefulWidget {
   final MouseCursor? mouseCursor;
 
   /// Whether detected gestures should provide acoustic and/or haptic feedback.
+  ///
+  /// If null, [BottomNavigationBarThemeData.enableFeedback] is used, falling
+  /// back to true.
   final bool? enableFeedback;
 
   @override
@@ -387,7 +400,7 @@ class _OneUIBottomNavigationBarState extends State<OneUIBottomNavigationBar>
     final double additionalBottomPadding = MediaQuery.of(
       context,
     ).padding.bottom;
-    Color? backgroundColor =
+    final Color? backgroundColor =
         widget.backgroundColor ?? bottomTheme.backgroundColor;
 
     return Semantics(
@@ -398,7 +411,6 @@ class _OneUIBottomNavigationBarState extends State<OneUIBottomNavigationBar>
         ),
         child: Material(
           color: backgroundColor,
-          type: MaterialType.transparency,
           child: Padding(
             padding: EdgeInsets.only(bottom: additionalBottomPadding),
             child: MediaQuery.removePadding(

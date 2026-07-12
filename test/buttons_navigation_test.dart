@@ -248,6 +248,51 @@ void main() {
       expectNoFlutterException(tester);
     });
 
+    testWidgets('bottom navigation applies its background color', (
+      WidgetTester tester,
+    ) async {
+      const Color backgroundColor = Color(0xff123456);
+
+      await tester.pumpWidget(
+        TestApp(
+          home: Scaffold(
+            bottomNavigationBar: one_ui.OneUIBottomNavigationBar(
+              backgroundColor: backgroundColor,
+              items: const <one_ui.OneUIBottomNavigationBarItem>[
+                one_ui.OneUIBottomNavigationBarItem(label: 'Home'),
+                one_ui.OneUIBottomNavigationBarItem(label: 'More'),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      final Material material = tester.widget<Material>(
+        find
+            .descendant(
+              of: find.byType(one_ui.OneUIBottomNavigationBar),
+              matching: find.byType(Material),
+            )
+            .first,
+      );
+      expect(material.color, backgroundColor);
+    });
+
+    test('bottom navigation items require exactly one label source', () {
+      expect(() => one_ui.OneUIBottomNavigationBarItem(), throwsAssertionError);
+      expect(
+        () => one_ui.OneUIBottomNavigationBarItem(
+          title: const Text('Legacy'),
+          label: 'Current',
+        ),
+        throwsAssertionError,
+      );
+      expect(
+        () => const one_ui.OneUIBottomNavigationBarItem(label: 'Current'),
+        returnsNormally,
+      );
+    });
+
     testWidgets('back button pops a route or invokes its override', (
       WidgetTester tester,
     ) async {
@@ -330,6 +375,47 @@ void main() {
       expectNoFlutterException(tester);
     });
 
+    testWidgets(
+      'app bar honors theme centering and includes its bottom height',
+      (WidgetTester tester) async {
+        final one_ui.OneUIAppBar appBar = one_ui.OneUIAppBar(
+          toolbarHeight: 70,
+          bottom: const PreferredSize(
+            preferredSize: Size.fromHeight(30),
+            child: SizedBox(),
+          ),
+        );
+        expect(appBar.preferredSize.height, 100);
+        expect(
+          () => one_ui.OneUIAppBar(toolbarOpacity: -0.1),
+          throwsAssertionError,
+        );
+        expect(
+          () => one_ui.OneUIAppBar(bottomOpacity: 1.1),
+          throwsAssertionError,
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: ThemeData(
+              appBarTheme: const AppBarThemeData(centerTitle: true),
+            ),
+            home: Scaffold(
+              appBar: one_ui.OneUIAppBar(title: const Text('Centered')),
+            ),
+          ),
+        );
+
+        expect(
+          tester
+              .widget<NavigationToolbar>(find.byType(NavigationToolbar))
+              .centerMiddle,
+          isTrue,
+        );
+        expectNoFlutterException(tester);
+      },
+    );
+
     testWidgets('view expands and collapses while its body scrolls', (
       WidgetTester tester,
     ) async {
@@ -367,6 +453,92 @@ void main() {
       expect(viewKey.currentState!.outerController.offset, greaterThan(0));
       expect(find.text('Collapsed title'), findsOneWidget);
       expect(find.text('Large title'), findsOneWidget);
+      expectNoFlutterException(tester);
+    });
+
+    test('view requires exactly one body source', () {
+      expect(
+        () => one_ui.OneUIView(title: const Text('Missing body')),
+        throwsAssertionError,
+      );
+      expect(
+        () => one_ui.OneUIView(
+          title: const Text('Ambiguous body'),
+          slivers: const <Widget>[],
+          child: const SizedBox(),
+        ),
+        throwsAssertionError,
+      );
+      expect(
+        () => one_ui.OneUIView(
+          title: const Text('Child body'),
+          child: const SizedBox(),
+        ),
+        returnsNormally,
+      );
+      expect(
+        () => one_ui.OneUIView(
+          title: const Text('Sliver body'),
+          slivers: const <Widget>[],
+        ),
+        returnsNormally,
+      );
+      expect(
+        () => one_ui.OneUIView(
+          title: const Text('Invalid spacing'),
+          actionSpacing: -1,
+          child: const SizedBox(),
+        ),
+        throwsAssertionError,
+      );
+    });
+
+    testWidgets('view renders a sliver body', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        TestApp(
+          home: Scaffold(
+            body: one_ui.OneUIView(
+              title: const Text('Sliver view'),
+              expandedHeight: 200,
+              slivers: const <Widget>[
+                SliverToBoxAdapter(child: Text('Sliver content')),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Sliver content'), findsOneWidget);
+      expectNoFlutterException(tester);
+    });
+
+    testWidgets('view inserts the requested spacing between actions', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        TestApp(
+          home: Scaffold(
+            body: one_ui.OneUIView(
+              title: const Text('Spaced actions'),
+              actionSpacing: 12,
+              actions: const <Widget>[
+                SizedBox(key: Key('first-action'), width: 20),
+                SizedBox(key: Key('second-action'), width: 20),
+              ],
+              child: ListView(),
+            ),
+          ),
+        ),
+      );
+
+      final Rect firstAction = tester.getRect(
+        find.byKey(const Key('first-action')),
+      );
+      final Rect secondAction = tester.getRect(
+        find.byKey(const Key('second-action')),
+      );
+
+      expect(secondAction.left - firstAction.right, 12);
       expectNoFlutterException(tester);
     });
   });

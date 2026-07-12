@@ -34,10 +34,7 @@ class _ToolbarContainerLayout extends SingleChildLayoutDelegate {
 class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   /// Creates a One UI design app bar.
   ///
-  /// The arguments [primary], [toolbarOpacity], [bottomOpacity],
-  /// [backwardsCompatibility], and [automaticallyImplyLeading] must
-  /// not be null. Additionally, if [elevation] is specified, it must
-  /// be non-negative.
+  /// If [elevation] is specified, it must be non-negative.
   ///
   /// Typically used in the [Scaffold.appBar] property.
   OneUIAppBar({
@@ -70,9 +67,11 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
     this.titleTextStyle,
     this.systemOverlayStyle,
   }) : assert(elevation == null || elevation >= 0.0),
+       assert(toolbarOpacity >= 0.0 && toolbarOpacity <= 1.0),
+       assert(bottomOpacity >= 0.0 && bottomOpacity <= 1.0),
        preferredSize = Size.fromHeight(
-         toolbarHeight ??
-             kToolbarHeight + (bottom?.preferredSize.height ?? 0.0),
+         (toolbarHeight ?? kToolbarHeight) +
+             (bottom?.preferredSize.height ?? 0.0),
        );
 
   /// {@template oneui.appbar.leading}
@@ -89,16 +88,15 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   /// in a [Scaffold] that also has a [Drawer], the [Scaffold] will fill this
   /// widget with an [IconButton] that opens the drawer (using [Icons.menu]). If
   /// there's no [Drawer] and the parent [Navigator] can go back, the [OneUIAppBar]
-  /// will use a [BackButton] that calls [Navigator.maybePop].
+  /// will use a [OneUIBackButton], which calls [Navigator.maybePop].
   /// {@endtemplate}
   final Widget? leading;
 
   /// {@template oneui.appbar.automaticallyImplyLeading}
-  /// Controls whether we should try to imply the leading widget if null.
+  /// Whether to infer a leading widget when [OneUIAppBar.leading] is null.
   ///
-  /// If true and [leading] is null, automatically try to deduce what the leading
-  /// widget should be. If false and [leading] is null, leading space is given to [title].
-  /// If leading widget is not null, this parameter has no effect.
+  /// When false, [title] may occupy the leading space. This property has no
+  /// effect when [OneUIAppBar.leading] is provided.
   /// {@endtemplate}
   final bool automaticallyImplyLeading;
 
@@ -106,7 +104,6 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   /// The primary widget displayed in the app bar.
   ///
   /// Becomes the middle component of the [NavigationToolbar] built by this widget.
-  //.
   /// Typically a [Text] widget that contains a description of the current
   /// contents of the app.
   /// {@endtemplate}
@@ -133,7 +130,7 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   ///
   /// The [actions] become the trailing component of the [NavigationToolbar] built
   /// by this widget. The height of each action is constrained to be no bigger
-  /// than the [toolbarHeight].
+  /// than [OneUIAppBar.toolbarHeight].
   /// {@endtemplate}
   final List<Widget>? actions;
 
@@ -170,7 +167,7 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   final double? elevation;
 
   /// {@template oneui.appbar.shadowColor}
-  /// The of the shadow below the app bar.
+  /// The color of the shadow below the app bar.
   ///
   /// If this property is null, then [AppBarTheme.shadowColor] of
   /// [ThemeData.appBarTheme] is used. If that is also null, the default value
@@ -179,7 +176,7 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   final Color? shadowColor;
 
   /// {@template oneui.appbar.shape}
-  /// The shape of the app bar's material's shape as well as its shadow.
+  /// The shape of the app bar's [Material] and its shadow.
   ///
   /// A shadow is only displayed if the [elevation] is greater than
   /// zero.
@@ -189,21 +186,19 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   /// {@template oneui.appbar.backgroundColor}
   /// The fill color to use for an app bar's [Material].
   ///
-  /// If null, then the [AppBarTheme.backgroundColor] is used. If that value is also
-  /// null, then [OneUIAppBar] uses the overall theme's [ColorScheme.primary] if the
-  /// overall theme's brightness is [Brightness.light], and [ColorScheme.surface]
-  /// if the overall theme's [brightness] is [Brightness.dark].
+  /// If null, [AppBarTheme.backgroundColor] is used. When both values are null,
+  /// the ambient [ThemeData.canvasColor] is used. In backwards-compatible mode,
+  /// [ThemeData.primaryColor] is used instead.
   /// {@endtemplate}
   final Color? backgroundColor;
 
   /// {@template oneui.appbar.foregroundColor}
-  /// The default color for [Text] and [Icon]s within the app bar.
+  /// The default color for [Text] and [Icon] widgets within the app bar.
   ///
-  /// If null, then [AppBarTheme.foregroundColor] is used. If that
-  /// value is also null, then [OneUIAppBar] uses the overall theme's
-  /// [ColorScheme.onPrimary] if the overall theme's brightness is
-  /// [Brightness.light], and [ColorScheme.onSurface] if the overall
-  /// theme's [brightness] is [Brightness.dark].
+  /// If null, [AppBarTheme.foregroundColor] is used. When both values are null,
+  /// the ambient icon and text theme colors are preserved.
+  ///
+  /// This property is ignored when [backwardsCompatibility] is true.
   ///
   /// This color is used to configure [DefaultTextStyle] that contains
   /// the toolbar's children, and the default [IconTheme] widgets that
@@ -212,17 +207,18 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   final Color? foregroundColor;
 
   /// {@template oneui.appbar.brightness}
-  /// This property is obsolete, please use [systemOverlayStyle] instead.
+  /// A legacy brightness override used only when [backwardsCompatibility] is
+  /// true. Otherwise, this property is ignored in favor of [systemOverlayStyle].
   ///
   /// Determines the brightness of the [SystemUiOverlayStyle]: for
-  /// [Brightness.dark], [SystemUiOverlayStyle.light] is used and fo
+  /// [Brightness.dark], [SystemUiOverlayStyle.light] is used, and for
   /// [Brightness.light], [SystemUiOverlayStyle.dark] is used.
   ///
   /// If this value is null then overall theme's brightness is used.
   ///
-  /// The AppBar is built within a `AnnotatedRegion<SystemUiOverlayStyle>`
+  /// The app bar is built within an `AnnotatedRegion<SystemUiOverlayStyle>`,
   /// which causes [SystemChrome.setSystemUIOverlayStyle] to be called
-  /// automatically.  Apps should not enclose the AppBar with
+  /// automatically. Apps should not enclose the app bar with
   /// their own [AnnotatedRegion].
   /// {@endtemplate}
   final Brightness? brightness;
@@ -230,9 +226,9 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   /// {@template oneui.appbar.iconTheme}
   /// The color, opacity, and size to use for toolbar icons.
   ///
-  /// If this property is null, then a copy of [ThemeData.iconTheme]
-  /// is used, with the [IconThemeData.color] set to the
-  /// app bar's [foregroundColor].
+  /// If null, [AppBarTheme.iconTheme] is used. If that is also null,
+  /// [ThemeData.iconTheme] is used in modern mode and
+  /// [ThemeData.primaryIconTheme] is used in backwards-compatible mode.
   /// {@endtemplate}
   final IconThemeData? iconTheme;
 
@@ -251,11 +247,12 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   final IconThemeData? actionsIconTheme;
 
   /// {@template oneui.appbar.textTheme}
-  /// The typographic styles to use for text in the app bar. Typically this is
-  /// set along with [brightness] [backgroundColor], [iconTheme].
+  /// The legacy typographic styles to use for text in the app bar. This is
+  /// honored only when [backwardsCompatibility] is true.
   ///
-  /// If this property is null, then
-  /// [ThemeData.primaryTextTheme] is used.
+  /// If this property is null, [ThemeData.primaryTextTheme] is used in
+  /// backwards-compatible mode. Prefer [toolbarTextStyle] and [titleTextStyle]
+  /// for new code.
   /// {@endtemplate}
   final TextTheme? textTheme;
 
@@ -299,6 +296,7 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   /// How opaque the toolbar part of the app bar is.
   ///
   /// A value of 1.0 is fully opaque, and a value of 0.0 is fully transparent.
+  /// The value must be between 0.0 and 1.0, inclusive.
   /// {@endtemplate}
   final double toolbarOpacity;
 
@@ -306,6 +304,7 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   /// How opaque the bottom part of the app bar is.
   ///
   /// A value of 1.0 is fully opaque, and a value of 0.0 is fully transparent.
+  /// The value must be between 0.0 and 1.0, inclusive.
   /// {@endtemplate}
   final double bottomOpacity;
 
@@ -319,38 +318,30 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   final Size preferredSize;
 
   /// {@template oneui.appbar.toolbarHeight}
-  /// Defines the height of the toolbar component of an [OneUIAppBar].
+  /// Defines the height of the toolbar component of a [OneUIAppBar].
   ///
   /// By default, the value of `toolbarHeight` is [kToolbarHeight].
   /// {@endtemplate}
   final double? toolbarHeight;
 
   /// {@template oneui.appbar.leadingWidth}
-  /// Defines the width of [leading] widget.
+  /// Defines the width of the [leading] widget.
   ///
-  /// By default, the value of `leadingWidth` is 56.0.
+  /// Defaults to [kToolbarHeight].
   /// {@endtemplate}
   final double? leadingWidth;
 
   /// {@template oneui.appbar.backwardsCompatibility}
-  /// If true, preserves the original defaults for the [backgroundColor],
-  /// [iconTheme], [actionsIconTheme] properties, and the original use of
-  /// the [textTheme] and [brightness] properties.
+  /// Whether to use the legacy app-bar color, icon, text, and system-overlay
+  /// defaults.
   ///
-  /// If this property is null, the default
-  /// value is false.
-  ///
-  /// This is a temporary property. When setting it to false is no
-  /// longer considered a breaking change, it will be depreacted and
-  /// its default value will be changed to false. App developers are
-  /// encouraged to opt into the new features by setting it to false
-  /// and using the [foregroundColor] and [systemOverlayStyle]
-  /// properties as needed.
+  /// Null is treated as false. Prefer [foregroundColor], [toolbarTextStyle],
+  /// [titleTextStyle], and [systemOverlayStyle] for new code.
   /// {@endtemplate}
   final bool? backwardsCompatibility;
 
   /// {@template oneui.appbar.toolbarTextStyle}
-  /// The default text style for the AppBar's [leading], and
+  /// The default text style for the app bar's [leading] and
   /// [actions] widgets, but not its [title].
   ///
   /// If this property is null, then [AppBarTheme.toolbarTextStyle] of
@@ -371,16 +362,17 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   final TextStyle? titleTextStyle;
 
   /// {@template oneui.appbar.systemOverlayStyle}
-  /// Specifies the style to use for the system overlays that overlap the AppBar.
+  /// Specifies the style for system overlays that overlap the app bar.
   ///
-  /// If this property is null, then [SystemUiOverlayStyle.light] is used if the
-  /// overall theme is dark, [SystemUiOverlayStyle.dark] otherwise. Theme brightness
-  /// is defined by [ColorScheme.brightness] for [ThemeData.colorScheme].
+  /// If null, [AppBarTheme.systemOverlayStyle] is used. If that is also null,
+  /// [SystemUiOverlayStyle.light] is used for a dark color scheme and
+  /// [SystemUiOverlayStyle.dark] for a light color scheme. This property is
+  /// ignored when [backwardsCompatibility] is true.
   ///
-  /// The AppBar's descendants are built within a
+  /// The app bar's descendants are built within an
   /// `AnnotatedRegion<SystemUiOverlayStyle>` widget, which causes
   /// [SystemChrome.setSystemUIOverlayStyle] to be called
-  /// automatically.  Apps should not enclose an AppBar with their
+  /// automatically. Apps should not enclose the app bar with their
   /// own [AnnotatedRegion].
   /// {@endtemplate}
   final SystemUiOverlayStyle? systemOverlayStyle;
@@ -566,7 +558,7 @@ class _OneUIAppBarState extends State<OneUIAppBar> {
       leading: leading,
       middle: title,
       trailing: actions,
-      centerMiddle: widget.centerTitle ?? false,
+      centerMiddle: widget.centerTitle ?? appBarTheme.centerTitle ?? false,
       middleSpacing:
           widget.titleSpacing ??
           appBarTheme.titleSpacing ??

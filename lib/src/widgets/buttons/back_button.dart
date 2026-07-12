@@ -2,13 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:one_ui/src/widgets/buttons/icon_button.dart';
 
 class OneUIBackButton extends StatelessWidget {
-  /// Creates an [OneUIIconButton] with back icon.
-  const OneUIBackButton({
-    Key? key,
-    this.color,
-    this.onPressed,
-    this.size,
-  }) : super(key: key);
+  /// Creates a [OneUIIconButton] with a back icon.
+  const OneUIBackButton({super.key, this.color, this.onPressed, this.size});
 
   /// The color to use for the icon.
   ///
@@ -26,6 +21,9 @@ class OneUIBackButton extends StatelessWidget {
   /// Defaults to null.
   final VoidCallback? onPressed;
 
+  /// The size of the back icon.
+  ///
+  /// Defaults to the ambient [IconThemeData.size].
   final double? size;
 
   @override
@@ -33,10 +31,7 @@ class OneUIBackButton extends StatelessWidget {
     assert(debugCheckHasMaterialLocalizations(context));
     return OneUIIconButton(
       splashRadius: 16,
-      icon: Icon(
-        Icons.arrow_back_ios_rounded,
-        size: size,
-      ),
+      icon: Icon(Icons.arrow_back_ios_rounded, size: size),
       color: color,
       tooltip: MaterialLocalizations.of(context).backButtonTooltip,
       onPressed: () {

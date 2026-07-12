@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -36,14 +34,11 @@ class _ToolbarContainerLayout extends SingleChildLayoutDelegate {
 class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   /// Creates a One UI design app bar.
   ///
-  /// The arguments [primary], [toolbarOpacity], [bottomOpacity],
-  /// [backwardsCompatibility], and [automaticallyImplyLeading] must
-  /// not be null. Additionally, if [elevation] is specified, it must
-  /// be non-negative.
+  /// If [elevation] is specified, it must be non-negative.
   ///
   /// Typically used in the [Scaffold.appBar] property.
   OneUIAppBar({
-    Key? key,
+    super.key,
     this.leading,
     this.automaticallyImplyLeading = true,
     this.title,
@@ -71,10 +66,13 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
     this.toolbarTextStyle,
     this.titleTextStyle,
     this.systemOverlayStyle,
-  })  : assert(elevation == null || elevation >= 0.0),
-        preferredSize = Size.fromHeight(toolbarHeight ??
-            kToolbarHeight + (bottom?.preferredSize.height ?? 0.0)),
-        super(key: key);
+  }) : assert(elevation == null || elevation >= 0.0),
+       assert(toolbarOpacity >= 0.0 && toolbarOpacity <= 1.0),
+       assert(bottomOpacity >= 0.0 && bottomOpacity <= 1.0),
+       preferredSize = Size.fromHeight(
+         (toolbarHeight ?? kToolbarHeight) +
+             (bottom?.preferredSize.height ?? 0.0),
+       );
 
   /// {@template oneui.appbar.leading}
   /// A widget to display before the toolbar's [title].
@@ -90,16 +88,15 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   /// in a [Scaffold] that also has a [Drawer], the [Scaffold] will fill this
   /// widget with an [IconButton] that opens the drawer (using [Icons.menu]). If
   /// there's no [Drawer] and the parent [Navigator] can go back, the [OneUIAppBar]
-  /// will use a [BackButton] that calls [Navigator.maybePop].
+  /// will use a [OneUIBackButton], which calls [Navigator.maybePop].
   /// {@endtemplate}
   final Widget? leading;
 
   /// {@template oneui.appbar.automaticallyImplyLeading}
-  /// Controls whether we should try to imply the leading widget if null.
+  /// Whether to infer a leading widget when [OneUIAppBar.leading] is null.
   ///
-  /// If true and [leading] is null, automatically try to deduce what the leading
-  /// widget should be. If false and [leading] is null, leading space is given to [title].
-  /// If leading widget is not null, this parameter has no effect.
+  /// When false, [title] may occupy the leading space. This property has no
+  /// effect when [OneUIAppBar.leading] is provided.
   /// {@endtemplate}
   final bool automaticallyImplyLeading;
 
@@ -107,7 +104,6 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   /// The primary widget displayed in the app bar.
   ///
   /// Becomes the middle component of the [NavigationToolbar] built by this widget.
-  //.
   /// Typically a [Text] widget that contains a description of the current
   /// contents of the app.
   /// {@endtemplate}
@@ -126,7 +122,7 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   final Widget? title;
 
   /// {@template oneui.appbar.actions}
-  /// A list of Widgets to display in a row after the [title] widget.
+  /// A list of widgets to display in a row after the [title] widget.
   ///
   /// Typically these widgets are [OneUIIconButton]s representing common operations.
   /// For less common operations, consider using a [OneUIPopupMenuButton] as the
@@ -134,7 +130,7 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   ///
   /// The [actions] become the trailing component of the [NavigationToolbar] built
   /// by this widget. The height of each action is constrained to be no bigger
-  /// than the [toolbarHeight].
+  /// than [OneUIAppBar.toolbarHeight].
   /// {@endtemplate}
   final List<Widget>? actions;
 
@@ -171,7 +167,7 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   final double? elevation;
 
   /// {@template oneui.appbar.shadowColor}
-  /// The of the shadow below the app bar.
+  /// The color of the shadow below the app bar.
   ///
   /// If this property is null, then [AppBarTheme.shadowColor] of
   /// [ThemeData.appBarTheme] is used. If that is also null, the default value
@@ -180,7 +176,7 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   final Color? shadowColor;
 
   /// {@template oneui.appbar.shape}
-  /// The shape of the app bar's material's shape as well as its shadow.
+  /// The shape of the app bar's [Material] and its shadow.
   ///
   /// A shadow is only displayed if the [elevation] is greater than
   /// zero.
@@ -190,21 +186,19 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   /// {@template oneui.appbar.backgroundColor}
   /// The fill color to use for an app bar's [Material].
   ///
-  /// If null, then the [AppBarTheme.backgroundColor] is used. If that value is also
-  /// null, then [OneUIAppBar] uses the overall theme's [ColorScheme.primary] if the
-  /// overall theme's brightness is [Brightness.light], and [ColorScheme.surface]
-  /// if the overall theme's [brightness] is [Brightness.dark].
+  /// If null, [AppBarTheme.backgroundColor] is used. When both values are null,
+  /// the ambient [ThemeData.canvasColor] is used. In backwards-compatible mode,
+  /// [ThemeData.primaryColor] is used instead.
   /// {@endtemplate}
   final Color? backgroundColor;
 
   /// {@template oneui.appbar.foregroundColor}
-  /// The default color for [Text] and [Icon]s within the app bar.
+  /// The default color for [Text] and [Icon] widgets within the app bar.
   ///
-  /// If null, then [AppBarTheme.foregroundColor] is used. If that
-  /// value is also null, then [OneUIAppBar] uses the overall theme's
-  /// [ColorScheme.onPrimary] if the overall theme's brightness is
-  /// [Brightness.light], and [ColorScheme.onSurface] if the overall
-  /// theme's [brightness] is [Brightness.dark].
+  /// If null, [AppBarTheme.foregroundColor] is used. When both values are null,
+  /// the ambient icon and text theme colors are preserved.
+  ///
+  /// This property is ignored when [backwardsCompatibility] is true.
   ///
   /// This color is used to configure [DefaultTextStyle] that contains
   /// the toolbar's children, and the default [IconTheme] widgets that
@@ -213,17 +207,18 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   final Color? foregroundColor;
 
   /// {@template oneui.appbar.brightness}
-  /// This property is obsolete, please use [systemOverlayStyle] instead.
+  /// A legacy brightness override used only when [backwardsCompatibility] is
+  /// true. Otherwise, this property is ignored in favor of [systemOverlayStyle].
   ///
   /// Determines the brightness of the [SystemUiOverlayStyle]: for
-  /// [Brightness.dark], [SystemUiOverlayStyle.light] is used and fo
+  /// [Brightness.dark], [SystemUiOverlayStyle.light] is used, and for
   /// [Brightness.light], [SystemUiOverlayStyle.dark] is used.
   ///
   /// If this value is null then overall theme's brightness is used.
   ///
-  /// The AppBar is built within a `AnnotatedRegion<SystemUiOverlayStyle>`
+  /// The app bar is built within an `AnnotatedRegion<SystemUiOverlayStyle>`,
   /// which causes [SystemChrome.setSystemUIOverlayStyle] to be called
-  /// automatically.  Apps should not enclose the AppBar with
+  /// automatically. Apps should not enclose the app bar with
   /// their own [AnnotatedRegion].
   /// {@endtemplate}
   final Brightness? brightness;
@@ -231,9 +226,9 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   /// {@template oneui.appbar.iconTheme}
   /// The color, opacity, and size to use for toolbar icons.
   ///
-  /// If this property is null, then a copy of [ThemeData.iconTheme]
-  /// is used, with the [IconThemeData.color] set to the
-  /// app bar's [foregroundColor].
+  /// If null, [AppBarTheme.iconTheme] is used. If that is also null,
+  /// [ThemeData.iconTheme] is used in modern mode and
+  /// [ThemeData.primaryIconTheme] is used in backwards-compatible mode.
   /// {@endtemplate}
   final IconThemeData? iconTheme;
 
@@ -252,11 +247,12 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   final IconThemeData? actionsIconTheme;
 
   /// {@template oneui.appbar.textTheme}
-  /// The typographic styles to use for text in the app bar. Typically this is
-  /// set along with [brightness] [backgroundColor], [iconTheme].
+  /// The legacy typographic styles to use for text in the app bar. This is
+  /// honored only when [backwardsCompatibility] is true.
   ///
-  /// If this property is null, then
-  /// [ThemeData.primaryTextTheme] is used.
+  /// If this property is null, [ThemeData.primaryTextTheme] is used in
+  /// backwards-compatible mode. Prefer [toolbarTextStyle] and [titleTextStyle]
+  /// for new code.
   /// {@endtemplate}
   final TextTheme? textTheme;
 
@@ -300,6 +296,7 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   /// How opaque the toolbar part of the app bar is.
   ///
   /// A value of 1.0 is fully opaque, and a value of 0.0 is fully transparent.
+  /// The value must be between 0.0 and 1.0, inclusive.
   /// {@endtemplate}
   final double toolbarOpacity;
 
@@ -307,6 +304,7 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   /// How opaque the bottom part of the app bar is.
   ///
   /// A value of 1.0 is fully opaque, and a value of 0.0 is fully transparent.
+  /// The value must be between 0.0 and 1.0, inclusive.
   /// {@endtemplate}
   final double bottomOpacity;
 
@@ -320,74 +318,67 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   final Size preferredSize;
 
   /// {@template oneui.appbar.toolbarHeight}
-  /// Defines the height of the toolbar component of an [OneUIAppBar].
+  /// Defines the height of the toolbar component of a [OneUIAppBar].
   ///
   /// By default, the value of `toolbarHeight` is [kToolbarHeight].
   /// {@endtemplate}
   final double? toolbarHeight;
 
   /// {@template oneui.appbar.leadingWidth}
-  /// Defines the width of [leading] widget.
+  /// Defines the width of the [leading] widget.
   ///
-  /// By default, the value of `leadingWidth` is 56.0.
+  /// Defaults to [kToolbarHeight].
   /// {@endtemplate}
   final double? leadingWidth;
 
   /// {@template oneui.appbar.backwardsCompatibility}
-  /// If true, preserves the original defaults for the [backgroundColor],
-  /// [iconTheme], [actionsIconTheme] properties, and the original use of
-  /// the [textTheme] and [brightness] properties.
+  /// Whether to use the legacy app-bar color, icon, text, and system-overlay
+  /// defaults.
   ///
-  /// If this property is null, the default
-  /// value is false.
-  ///
-  /// This is a temporary property. When setting it to false is no
-  /// longer considered a breaking change, it will be depreacted and
-  /// its default value will be changed to false. App developers are
-  /// encouraged to opt into the new features by setting it to false
-  /// and using the [foregroundColor] and [systemOverlayStyle]
-  /// properties as needed.
+  /// Null is treated as false. Prefer [foregroundColor], [toolbarTextStyle],
+  /// [titleTextStyle], and [systemOverlayStyle] for new code.
   /// {@endtemplate}
   final bool? backwardsCompatibility;
 
   /// {@template oneui.appbar.toolbarTextStyle}
-  /// The default text style for the AppBar's [leading], and
+  /// The default text style for the app bar's [leading] and
   /// [actions] widgets, but not its [title].
   ///
   /// If this property is null, then [AppBarTheme.toolbarTextStyle] of
   /// [ThemeData.appBarTheme] is used. If that is also null, the default
-  /// value is a copy of the overall theme's [TextTheme.bodyText2]
+  /// value is a copy of the overall theme's [TextTheme.bodyMedium]
   /// [TextStyle], with color set to the app bar's [foregroundColor].
   /// {@endtemplate}
   final TextStyle? toolbarTextStyle;
 
   /// {@template oneui.appbar.titleTextStyle}
-  /// The default text style for the AppBar's [title] widget.
+  /// The default text style for the [title] widget in this app bar.
   ///
   /// If this property is null, then [AppBarTheme.titleTextStyle] of
   /// [ThemeData.appBarTheme] is used. If that is also null, the default
-  /// value is a copy of the overall theme's [TextTheme.headline6]
+  /// value is a copy of the overall theme's [TextTheme.titleLarge]
   /// [TextStyle], with color set to the app bar's [foregroundColor].
   /// {@endtemplate}
   final TextStyle? titleTextStyle;
 
   /// {@template oneui.appbar.systemOverlayStyle}
-  /// Specifies the style to use for the system overlays that overlap the AppBar.
+  /// Specifies the style for system overlays that overlap the app bar.
   ///
-  /// If this property is null, then [SystemUiOverlayStyle.light] is used if the
-  /// overall theme is dark, [SystemUiOverlayStyle.dark] otherwise. Theme brightness
-  /// is defined by [ColorScheme.brightness] for [ThemeData.colorScheme].
+  /// If null, [AppBarTheme.systemOverlayStyle] is used. If that is also null,
+  /// [SystemUiOverlayStyle.light] is used for a dark color scheme and
+  /// [SystemUiOverlayStyle.dark] for a light color scheme. This property is
+  /// ignored when [backwardsCompatibility] is true.
   ///
-  /// The AppBar's descendants are built within a
+  /// The app bar's descendants are built within an
   /// `AnnotatedRegion<SystemUiOverlayStyle>` widget, which causes
   /// [SystemChrome.setSystemUIOverlayStyle] to be called
-  /// automatically.  Apps should not enclose an AppBar with their
+  /// automatically. Apps should not enclose the app bar with their
   /// own [AnnotatedRegion].
   /// {@endtemplate}
   final SystemUiOverlayStyle? systemOverlayStyle;
 
   @override
-  _OneUIAppBarState createState() => _OneUIAppBarState();
+  State<OneUIAppBar> createState() => _OneUIAppBarState();
 }
 
 class _OneUIAppBarState extends State<OneUIAppBar> {
@@ -408,7 +399,7 @@ class _OneUIAppBarState extends State<OneUIAppBar> {
     assert(debugCheckHasMaterialLocalizations(context));
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
-    final AppBarTheme appBarTheme = AppBarTheme.of(context);
+    final AppBarThemeData appBarTheme = AppBarTheme.of(context);
     final ScaffoldState? scaffold = Scaffold.maybeOf(context);
     final ModalRoute<dynamic>? parentRoute = ModalRoute.of(context);
 
@@ -423,8 +414,8 @@ class _OneUIAppBarState extends State<OneUIAppBar> {
 
     final Color? backgroundColor = backwardsCompatibility
         ? widget.backgroundColor ??
-            appBarTheme.backgroundColor ??
-            theme.primaryColor
+              appBarTheme.backgroundColor ??
+              theme.primaryColor
         : widget.backgroundColor ?? appBarTheme.backgroundColor;
 
     final Color? foregroundColor =
@@ -433,40 +424,45 @@ class _OneUIAppBarState extends State<OneUIAppBar> {
     IconThemeData overallIconTheme = backwardsCompatibility
         ? widget.iconTheme ?? appBarTheme.iconTheme ?? theme.primaryIconTheme
         : widget.iconTheme ??
-            appBarTheme.iconTheme ??
-            theme.iconTheme.copyWith(color: foregroundColor);
+              appBarTheme.iconTheme ??
+              theme.iconTheme.copyWith(color: foregroundColor);
 
-    IconThemeData actionsIconTheme = widget.actionsIconTheme ??
+    IconThemeData actionsIconTheme =
+        widget.actionsIconTheme ??
         appBarTheme.actionsIconTheme ??
         overallIconTheme;
 
     TextStyle? toolbarTextStyle = backwardsCompatibility
-        ? widget.textTheme?.bodyText2 ??
-            appBarTheme.toolbarTextStyle ??
-            theme.primaryTextTheme.bodyText2
+        ? widget.textTheme?.bodyMedium ??
+              appBarTheme.toolbarTextStyle ??
+              theme.primaryTextTheme.bodyMedium
         : widget.toolbarTextStyle ??
-            appBarTheme.toolbarTextStyle ??
-            theme.textTheme.bodyText2?.copyWith(color: foregroundColor);
+              appBarTheme.toolbarTextStyle ??
+              theme.textTheme.bodyMedium?.copyWith(color: foregroundColor);
 
     TextStyle? titleTextStyle = backwardsCompatibility
-        ? widget.textTheme?.headline6 ??
-            appBarTheme.titleTextStyle ??
-            theme.primaryTextTheme.headline6
+        ? widget.textTheme?.titleLarge ??
+              appBarTheme.titleTextStyle ??
+              theme.primaryTextTheme.titleLarge
         : widget.titleTextStyle ??
-            appBarTheme.titleTextStyle ??
-            theme.textTheme.headline6?.copyWith(color: foregroundColor);
+              appBarTheme.titleTextStyle ??
+              theme.textTheme.titleLarge?.copyWith(color: foregroundColor);
 
     if (widget.toolbarOpacity != 1.0) {
-      final double opacity =
-          const Interval(0.25, 1.0, curve: Curves.fastOutSlowIn)
-              .transform(widget.toolbarOpacity);
+      final double opacity = const Interval(
+        0.25,
+        1.0,
+        curve: Curves.fastOutSlowIn,
+      ).transform(widget.toolbarOpacity);
       if (titleTextStyle?.color != null) {
-        titleTextStyle = titleTextStyle!
-            .copyWith(color: titleTextStyle.color!.withOpacity(opacity));
+        titleTextStyle = titleTextStyle!.copyWith(
+          color: titleTextStyle.color!.withValues(alpha: opacity),
+        );
       }
       if (toolbarTextStyle?.color != null) {
-        toolbarTextStyle = toolbarTextStyle!
-            .copyWith(color: toolbarTextStyle.color!.withOpacity(opacity));
+        toolbarTextStyle = toolbarTextStyle!.copyWith(
+          color: toolbarTextStyle.color!.withValues(alpha: opacity),
+        );
       }
       overallIconTheme = overallIconTheme.copyWith(
         opacity: opacity * (overallIconTheme.opacity ?? 1.0),
@@ -486,15 +482,17 @@ class _OneUIAppBarState extends State<OneUIAppBar> {
         );
       } else {
         if (!hasEndDrawer && canPop) {
-          leading =
-              useCloseButton ? const CloseButton() : const OneUIBackButton();
+          leading = useCloseButton
+              ? const CloseButton()
+              : const OneUIBackButton();
         }
       }
     }
     if (leading != null) {
       leading = ConstrainedBox(
         constraints: BoxConstraints.tightFor(
-            width: widget.leadingWidth ?? _kLeadingWidth),
+          width: widget.leadingWidth ?? _kLeadingWidth,
+        ),
         child: leading,
       );
     }
@@ -516,11 +514,7 @@ class _OneUIAppBarState extends State<OneUIAppBar> {
 
       title = _AppBarTitleBox(child: title);
       if (!widget.excludeHeaderSemantics) {
-        title = Semantics(
-          namesRoute: namesRoute,
-          child: title,
-          header: true,
-        );
+        title = Semantics(namesRoute: namesRoute, header: true, child: title);
       }
 
       title = DefaultTextStyle(
@@ -532,17 +526,10 @@ class _OneUIAppBarState extends State<OneUIAppBar> {
 
       // Set maximum text scale factor to [_kMaxTitleTextScaleFactor] for the
       // title to keep the visual hierarchy the same even with larger font
-      // sizes. To opt out, wrap the [title] widget in a [MediaQuery] widget
-      // with [MediaQueryData.textScaleFactor] set to
-      // `MediaQuery.textScaleFactorOf(context)`.
-      final MediaQueryData mediaQueryData = MediaQuery.of(context);
-      title = MediaQuery(
-        data: mediaQueryData.copyWith(
-          textScaleFactor: math.min(
-            mediaQueryData.textScaleFactor,
-            _kMaxTitleTextScaleFactor,
-          ),
-        ),
+      // sizes. To opt out, wrap the [title] widget in a [MediaQuery] with a
+      // different [TextScaler].
+      title = MediaQuery.withClampedTextScaling(
+        maxScaleFactor: _kMaxTitleTextScaleFactor,
         child: title,
       );
     }
@@ -564,18 +551,16 @@ class _OneUIAppBarState extends State<OneUIAppBar> {
 
     // Allow the trailing actions to have their own theme if necessary.
     if (actions != null) {
-      actions = IconTheme.merge(
-        data: actionsIconTheme,
-        child: actions,
-      );
+      actions = IconTheme.merge(data: actionsIconTheme, child: actions);
     }
 
     final Widget toolbar = NavigationToolbar(
       leading: leading,
       middle: title,
       trailing: actions,
-      centerMiddle: widget.centerTitle ?? false,
-      middleSpacing: widget.titleSpacing ??
+      centerMiddle: widget.centerTitle ?? appBarTheme.centerTitle ?? false,
+      middleSpacing:
+          widget.titleSpacing ??
           appBarTheme.titleSpacing ??
           NavigationToolbar.kMiddleSpacing,
     );
@@ -587,10 +572,7 @@ class _OneUIAppBarState extends State<OneUIAppBar> {
         delegate: _ToolbarContainerLayout(toolbarHeight),
         child: IconTheme.merge(
           data: overallIconTheme,
-          child: DefaultTextStyle(
-            style: toolbarTextStyle!,
-            child: toolbar,
-          ),
+          child: DefaultTextStyle(style: toolbarTextStyle!, child: toolbar),
         ),
       ),
     );
@@ -608,8 +590,11 @@ class _OneUIAppBarState extends State<OneUIAppBar> {
             widget.bottom!
           else
             Opacity(
-              opacity: const Interval(0.25, 1.0, curve: Curves.fastOutSlowIn)
-                  .transform(widget.bottomOpacity),
+              opacity: const Interval(
+                0.25,
+                1.0,
+                curve: Curves.fastOutSlowIn,
+              ).transform(widget.bottomOpacity),
               child: widget.bottom,
             ),
         ],
@@ -618,17 +603,10 @@ class _OneUIAppBarState extends State<OneUIAppBar> {
 
     // The padding applies to the toolbar and tabbar, not the flexible space.
     if (widget.primary) {
-      appBar = SafeArea(
-        bottom: false,
-        top: true,
-        child: appBar,
-      );
+      appBar = SafeArea(bottom: false, top: true, child: appBar);
     }
 
-    appBar = Align(
-      alignment: Alignment.topCenter,
-      child: appBar,
-    );
+    appBar = Align(alignment: Alignment.topCenter, child: appBar);
 
     if (widget.flexibleSpace != null) {
       appBar = Stack(
@@ -644,10 +622,7 @@ class _OneUIAppBarState extends State<OneUIAppBar> {
             explicitChildNodes: true,
             // Creates a material widget to prevent the flexibleSpace from
             // obscuring the ink splashes produced by appBar children.
-            child: Material(
-              type: MaterialType.transparency,
-              child: appBar,
-            ),
+            child: Material(type: MaterialType.transparency, child: appBar),
           ),
         ],
       );
@@ -657,13 +632,13 @@ class _OneUIAppBarState extends State<OneUIAppBar> {
         widget.brightness ?? colorScheme.brightness;
     final SystemUiOverlayStyle overlayStyle = backwardsCompatibility
         ? (overlayStyleBrightness == Brightness.dark
-            ? SystemUiOverlayStyle.light
-            : SystemUiOverlayStyle.dark)
+              ? SystemUiOverlayStyle.light
+              : SystemUiOverlayStyle.dark)
         : widget.systemOverlayStyle ??
-            appBarTheme.systemOverlayStyle ??
-            (colorScheme.brightness == Brightness.dark
-                ? SystemUiOverlayStyle.light
-                : SystemUiOverlayStyle.dark);
+              appBarTheme.systemOverlayStyle ??
+              (colorScheme.brightness == Brightness.dark
+                  ? SystemUiOverlayStyle.light
+                  : SystemUiOverlayStyle.dark);
 
     return Semantics(
       container: true,
@@ -673,14 +648,12 @@ class _OneUIAppBarState extends State<OneUIAppBar> {
           color: backgroundColor,
           elevation:
               widget.elevation ?? appBarTheme.elevation ?? _defaultElevation,
-          shadowColor: widget.shadowColor ??
+          shadowColor:
+              widget.shadowColor ??
               appBarTheme.shadowColor ??
               _defaultShadowColor,
           shape: widget.shape,
-          child: Semantics(
-            explicitChildNodes: true,
-            child: appBar,
-          ),
+          child: Semantics(explicitChildNodes: true, child: appBar),
         ),
       ),
     );
@@ -688,44 +661,40 @@ class _OneUIAppBarState extends State<OneUIAppBar> {
 }
 
 class _AppBarTitleBox extends SingleChildRenderObjectWidget {
-  const _AppBarTitleBox({Key? key, required Widget child})
-      : super(key: key, child: child);
+  const _AppBarTitleBox({required super.child});
 
   @override
   _RenderAppBarTitleBox createRenderObject(BuildContext context) {
-    return _RenderAppBarTitleBox(
-      textDirection: Directionality.of(context),
-    );
+    return _RenderAppBarTitleBox(textDirection: Directionality.of(context));
   }
 
   @override
   void updateRenderObject(
-      BuildContext context, _RenderAppBarTitleBox renderObject) {
+    BuildContext context,
+    _RenderAppBarTitleBox renderObject,
+  ) {
     renderObject.textDirection = Directionality.of(context);
   }
 }
 
 class _RenderAppBarTitleBox extends RenderAligningShiftedBox {
-  _RenderAppBarTitleBox({
-    RenderBox? child,
-    TextDirection? textDirection,
-  }) : super(
-            child: child,
-            alignment: Alignment.center,
-            textDirection: textDirection);
+  _RenderAppBarTitleBox({super.textDirection})
+    : super(alignment: Alignment.center);
 
   @override
   Size computeDryLayout(BoxConstraints constraints) {
-    final BoxConstraints innerConstraints =
-        constraints.copyWith(maxHeight: double.infinity);
+    final BoxConstraints innerConstraints = constraints.copyWith(
+      maxHeight: double.infinity,
+    );
     final Size childSize = child!.getDryLayout(innerConstraints);
     return constraints.constrain(childSize);
   }
 
   @override
   void performLayout() {
-    final BoxConstraints innerConstraints =
-        constraints.copyWith(maxHeight: double.infinity);
+    final BoxConstraints innerConstraints = constraints.copyWith(
+      maxHeight: double.infinity,
+    );
     child!.layout(innerConstraints, parentUsesSize: true);
     size = constraints.constrain(child!.size);
     alignChild();

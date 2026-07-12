@@ -1,16 +1,51 @@
 # one_ui_example
 
-A Flutter application showcasing how to use one_ui package.
+A Flutter app that demonstrates every public `one_ui` widget and ink effect.
 
-## Getting Started
+Run all commands below from the `example` directory.
 
-This project is a starting point for a Flutter application.
+## Run the catalog
 
-A few resources to get you started if this is your first Flutter project:
+```shell
+flutter pub get
+flutter run
+```
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+The catalog includes dedicated pages for app bars and views, bottom
+navigation, buttons, dialogs, popup menus, switches, sliders, and ink effects.
+Each interaction displays an observable status so it can be checked manually
+and by the integration test.
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+The color controls switch between light and dark themes and between the built-in
+One UI palette and Material You. Material You uses the device's dynamic colors
+when available, with a configurable seeded `ColorScheme` fallback.
+
+## Test the catalog
+
+To run the widget tests:
+
+```shell
+flutter test
+```
+
+For the web integration test, start ChromeDriver in the first terminal and
+leave it running:
+
+```shell
+chromedriver --port=4444
+```
+
+Then run the catalog flow from the `example` directory in a second terminal:
+
+```shell
+flutter drive \
+  --driver=test_driver/integration_test.dart \
+  --target=integration_test/widget_catalog_test.dart \
+  -d web-server \
+  --browser-name=chrome \
+  --release
+```
+
+The Chrome flow requires a matching ChromeDriver on `PATH`. The Flutter
+[integration-testing guide](https://docs.flutter.dev/testing/integration-tests#test-in-a-web-browser)
+documents how to install it with `@puppeteer/browsers`.

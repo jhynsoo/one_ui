@@ -9,7 +9,10 @@ const double _kSplashInitialSize = 0.0; // logical pixels
 const double _kSplashConfirmedVelocity = 1.0; // logical pixels per millisecond
 
 RectCallback? _getClipCallback(
-    RenderBox referenceBox, bool containedInkWell, RectCallback? rectCallback) {
+  RenderBox referenceBox,
+  bool containedInkWell,
+  RectCallback? rectCallback,
+) {
   if (rectCallback != null) {
     assert(containedInkWell);
     return rectCallback;
@@ -18,11 +21,16 @@ RectCallback? _getClipCallback(
   return null;
 }
 
-double _getTargetRadius(RenderBox referenceBox, bool containedInkWell,
-    RectCallback? rectCallback, Offset position) {
+double _getTargetRadius(
+  RenderBox referenceBox,
+  bool containedInkWell,
+  RectCallback? rectCallback,
+  Offset position,
+) {
   if (containedInkWell) {
-    final Size size =
-        rectCallback != null ? rectCallback().size : referenceBox.size;
+    final Size size = rectCallback != null
+        ? rectCallback().size
+        : referenceBox.size;
     return _getSplashRadiusForPositionInSize(size, position);
   }
   return Material.defaultSplashRadius;
@@ -80,7 +88,7 @@ class _OneUIInkSplashFactory extends InteractiveInkFeatureFactory {
 ///
 /// See also:
 ///
-///  * [InkRipple], which is an ink splash feature that expands more
+///  * [OneUIInkRipple], which is an ink splash feature that expands more
 ///    aggressively than this class does.
 ///  * [InkResponse], which uses gestures to trigger ink highlights and ink
 ///    splashes in the parent [Material].
@@ -92,7 +100,7 @@ class _OneUIInkSplashFactory extends InteractiveInkFeatureFactory {
 ///  * [Ink], a convenience widget for drawing images and other decorations on
 ///    Material widgets.
 class OneUIInkSplash extends InteractiveInkFeature {
-  /// Begin a splash, centered at position relative to [referenceBox].
+  /// Begins a splash at [position] relative to [referenceBox].
   ///
   /// The [controller] argument is typically obtained via
   /// `Material.of(context)`.
@@ -109,52 +117,60 @@ class OneUIInkSplash extends InteractiveInkFeature {
   /// When the splash is removed, `onRemoved` will be called.
   OneUIInkSplash({
     required MaterialInkController controller,
-    required RenderBox referenceBox,
+    required super.referenceBox,
     required TextDirection textDirection,
-    Offset? position,
+    required Offset position,
     required Color color,
     bool containedInkWell = false,
     RectCallback? rectCallback,
     BorderRadius? borderRadius,
     ShapeBorder? customBorder,
     double? radius,
-    VoidCallback? onRemoved,
-  })  : _position = position,
-        _borderRadius = borderRadius ?? BorderRadius.zero,
-        _customBorder = customBorder,
-        _targetRadius = radius ??
-            _getTargetRadius(
-                referenceBox, containedInkWell, rectCallback, position!),
-        _clipCallback =
-            _getClipCallback(referenceBox, containedInkWell, rectCallback),
-        _repositionToReferenceBox = !containedInkWell,
-        _textDirection = textDirection,
-        super(
-            controller: controller,
-            referenceBox: referenceBox,
-            color: color,
-            onRemoved: onRemoved) {
-    _radiusController = AnimationController(
-        duration: _kUnconfirmedSplashDuration, vsync: controller.vsync)
-      ..addListener(controller.markNeedsPaint)
-      ..forward();
-    _radius = _radiusController.drive(Tween<double>(
-      begin: _kSplashInitialSize,
-      end: _targetRadius,
-    ));
-    _alphaController = AnimationController(
-        duration: _kSplashFadeDuration, vsync: controller.vsync)
-      ..addListener(controller.markNeedsPaint)
-      ..addStatusListener(_handleAlphaStatusChanged);
-    _alpha = _alphaController!.drive(IntTween(
-      begin: color.alpha,
-      end: 0,
-    ));
+    super.onRemoved,
+  }) : _position = position,
+       _borderRadius = borderRadius ?? BorderRadius.zero,
+       _customBorder = customBorder,
+       _targetRadius =
+           radius ??
+           _getTargetRadius(
+             referenceBox,
+             containedInkWell,
+             rectCallback,
+             position,
+           ),
+       _clipCallback = _getClipCallback(
+         referenceBox,
+         containedInkWell,
+         rectCallback,
+       ),
+       _repositionToReferenceBox = !containedInkWell,
+       _textDirection = textDirection,
+       super(controller: controller, color: color) {
+    _radiusController =
+        AnimationController(
+            duration: _kUnconfirmedSplashDuration,
+            vsync: controller.vsync,
+          )
+          ..addListener(controller.markNeedsPaint)
+          ..forward();
+    _radius = _radiusController.drive(
+      Tween<double>(begin: _kSplashInitialSize, end: _targetRadius),
+    );
+    _alphaController =
+        AnimationController(
+            duration: _kSplashFadeDuration,
+            vsync: controller.vsync,
+          )
+          ..addListener(controller.markNeedsPaint)
+          ..addStatusListener(_handleAlphaStatusChanged);
+    _alpha = _alphaController!.drive(
+      IntTween(begin: (color.a * 255.0).round().clamp(0, 255), end: 0),
+    );
 
     controller.addInkFeature(this);
   }
 
-  final Offset? _position;
+  final Offset _position;
   final BorderRadius _borderRadius;
   final ShapeBorder? _customBorder;
   final double _targetRadius;
@@ -169,7 +185,7 @@ class OneUIInkSplash extends InteractiveInkFeature {
   AnimationController? _alphaController;
 
   /// Used to specify this type of ink splash for an [InkWell], [InkResponse],
-  /// material [Theme], or [ButtonStyle].
+  /// a Material [Theme], or [ButtonStyle].
   static const InteractiveInkFeatureFactory splashFactory =
       _OneUIInkSplashFactory();
 
@@ -202,15 +218,19 @@ class OneUIInkSplash extends InteractiveInkFeature {
   @override
   void paintFeature(Canvas canvas, Matrix4 transform) {
     final Paint paint = Paint()..color = color.withAlpha(_alpha.value);
-    Offset? center = _position;
-    if (_repositionToReferenceBox)
-      center = Offset.lerp(center, referenceBox.size.center(Offset.zero),
-          _radiusController.value);
+    Offset center = _position;
+    if (_repositionToReferenceBox) {
+      center = Offset.lerp(
+        center,
+        referenceBox.size.center(Offset.zero),
+        _radiusController.value,
+      )!;
+    }
     paintInkCircle(
       canvas: canvas,
       transform: transform,
       paint: paint,
-      center: center!,
+      center: center,
       textDirection: _textDirection,
       radius: _radius.value,
       customBorder: _customBorder,

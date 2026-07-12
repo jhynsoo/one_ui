@@ -3,8 +3,10 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:one_ui/src/widgets/buttons/flat_button.dart';
 
-const EdgeInsets _defaultInsetPadding =
-    EdgeInsets.symmetric(horizontal: 40.0, vertical: 24.0);
+const EdgeInsets _defaultInsetPadding = EdgeInsets.symmetric(
+  horizontal: 40.0,
+  vertical: 24.0,
+);
 
 Future<T?> showOneUIDialog<T>({
   Key? key,
@@ -20,22 +22,22 @@ Future<T?> showOneUIDialog<T>({
 
   final CapturedThemes themes = InheritedTheme.capture(
     from: context,
-    to: Navigator.of(
-      context,
-      rootNavigator: useRootNavigator,
-    ).context,
+    to: Navigator.of(context, rootNavigator: useRootNavigator).context,
   );
 
-  return Navigator.of(context, rootNavigator: useRootNavigator)
-      .push<T>(OneUIDialogRoute<T>(
-    context: context,
-    builder: builder,
-    barrierColor: Colors.black54,
-    barrierLabel: barrierLabel,
-    useSafeArea: useSafeArea,
-    settings: routeSettings,
-    themes: themes,
-  ));
+  return Navigator.of(context, rootNavigator: useRootNavigator).push<T>(
+    OneUIDialogRoute<T>(
+      context: context,
+      builder: (BuildContext context) =>
+          KeyedSubtree(key: key, child: builder(context)),
+      barrierColor: Colors.black54,
+      barrierDismissible: barrierDismissible,
+      barrierLabel: barrierLabel,
+      useSafeArea: useSafeArea,
+      settings: routeSettings,
+      themes: themes,
+    ),
+  );
 }
 
 class OneUIDialogRoute<T> extends RawDialogRoute<T> {
@@ -43,60 +45,58 @@ class OneUIDialogRoute<T> extends RawDialogRoute<T> {
     required BuildContext context,
     required WidgetBuilder builder,
     CapturedThemes? themes,
-    Color? barrierColor = Colors.black54,
-    bool barrierDismissible = true,
+    super.barrierColor = Colors.black54,
+    super.barrierDismissible = true,
     String? barrierLabel,
     bool useSafeArea = true,
-    RouteSettings? settings,
+    super.settings,
   }) : super(
-          pageBuilder: (BuildContext buildContext, Animation<double> animation,
-              Animation<double> secondaryAnimation) {
-            final Widget pageChild = Builder(builder: builder);
-            Widget dialog = themes?.wrap(pageChild) ?? pageChild;
-            if (useSafeArea) {
-              dialog = SafeArea(child: dialog);
-            }
-            return dialog;
-          },
-          barrierDismissible: barrierDismissible,
-          barrierColor: barrierColor,
-          barrierLabel: barrierLabel ??
-              MaterialLocalizations.of(context).modalBarrierDismissLabel,
-          transitionDuration: const Duration(milliseconds: 200),
-          transitionBuilder: _buildOneUIDialogTransitions,
-          settings: settings,
-        );
+         pageBuilder:
+             (
+               BuildContext buildContext,
+               Animation<double> animation,
+               Animation<double> secondaryAnimation,
+             ) {
+               final Widget pageChild = Builder(builder: builder);
+               Widget dialog = themes?.wrap(pageChild) ?? pageChild;
+               if (useSafeArea) {
+                 dialog = SafeArea(child: dialog);
+               }
+               return dialog;
+             },
+         barrierLabel:
+             barrierLabel ??
+             MaterialLocalizations.of(context).modalBarrierDismissLabel,
+         transitionDuration: const Duration(milliseconds: 200),
+         transitionBuilder: _buildOneUIDialogTransitions,
+       );
 
   @override
-  get reverseTransitionDuration => const Duration(milliseconds: 100);
+  Duration get reverseTransitionDuration => const Duration(milliseconds: 100);
 }
 
 Widget _buildOneUIDialogTransitions(
-    BuildContext context,
-    Animation<double> animation,
-    Animation<double> secondaryAnimation,
-    Widget child) {
+  BuildContext context,
+  Animation<double> animation,
+  Animation<double> secondaryAnimation,
+  Widget child,
+) {
   return SlideTransition(
-    position: Tween<Offset>(
-      begin: const Offset(.0, .025),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: animation,
-        curve: Curves.easeOut,
-        reverseCurve: Curves.easeIn,
-      ),
-    ),
-    child: FadeTransition(
-      opacity: animation,
-      child: child,
-    ),
+    position: Tween<Offset>(begin: const Offset(.0, .025), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOut,
+            reverseCurve: Curves.easeIn,
+          ),
+        ),
+    child: FadeTransition(opacity: animation, child: child),
   );
 }
 
 class OneUIDialog extends StatelessWidget {
   const OneUIDialog({
-    Key? key,
+    super.key,
     this.backgroundColor,
     this.elevation,
     this.insetAnimationDuration = const Duration(milliseconds: 100),
@@ -106,22 +106,24 @@ class OneUIDialog extends StatelessWidget {
     this.shape,
     this.useOneUITheme = true,
     this.child,
-  }) : super(key: key);
+  });
 
   /// {@template oneui.dialog.backgroundColor}
   /// The background color of the surface of this [OneUIDialog].
   ///
   /// This sets the [Material.color] on this [OneUIDialog]'s [Material].
   ///
-  /// If `null`, [ThemeData.dialogBackgroundColor] is used.
+  /// If null and [useOneUITheme] is true, the default One UI light or dark
+  /// surface color is used. Otherwise, [DialogThemeData.backgroundColor] is
+  /// used, falling back to [ColorScheme.surface].
   /// {@endtemplate}
   final Color? backgroundColor;
 
   /// {@template oneui.dialog.elevation}
   /// The z-coordinate of this [OneUIDialog].
   ///
-  /// If null then [DialogTheme.elevation] is used, and if that's null then the
-  /// dialog's elevation is 2.0.
+  /// If null, [DialogThemeData.elevation] is used. If that is also null, the
+  /// elevation defaults to 2.0.
   /// {@endtemplate}
   /// {@macro flutter.material.material.elevation}
   final double? elevation;
@@ -158,7 +160,7 @@ class OneUIDialog extends StatelessWidget {
   /// See the enum [Clip] for details of all possible options and their common
   /// use cases.
   ///
-  /// Defaults to [Clip.none], and must not be null.
+  /// Defaults to [Clip.none].
   /// {@endtemplate}
   final Clip clipBehavior;
 
@@ -167,12 +169,15 @@ class OneUIDialog extends StatelessWidget {
   ///
   /// Defines the dialog's [Material.shape].
   ///
-  /// The default shape is a [RoundedRectangleBorder] with a radius of 4.0
+  /// The default shape is a [RoundedRectangleBorder] with a radius of 24.0.
   /// {@endtemplate}
   final ShapeBorder? shape;
 
   /// {@template oneui.dialog.useOneUITheme}
-  /// If true, ignore [shape] and use OneUI default style dialog.
+  /// Whether to use the default One UI surface color and shape when explicit
+  /// values are not provided.
+  ///
+  /// Defaults to true.
   /// {@endtemplate}
   final bool useOneUITheme;
 
@@ -183,26 +188,28 @@ class OneUIDialog extends StatelessWidget {
 
   static const RoundedRectangleBorder _defaultDialogShape =
       RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(24.0)));
+        borderRadius: BorderRadius.all(Radius.circular(24.0)),
+      );
   static const double _defaultElevation = 2.0;
 
   @override
   Widget build(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final DialogTheme dialogTheme = DialogTheme.of(context);
+    final DialogThemeData dialogTheme = DialogTheme.of(context);
     final MediaQueryData mediaQuery = MediaQuery.of(context);
     final EdgeInsets effectivePadding =
         mediaQuery.viewInsets + (insetPadding ?? EdgeInsets.zero);
     final double constraintsFactor =
         mediaQuery.orientation == Orientation.portrait
-            ? mediaQuery.size.width > 600
-                ? 0.6 // tablet portrait
-                : 1.0 // phone portrait
-            : mediaQuery.size.height > 600
-                ? 0.375 // tablet landscape
-                : 0.6; // phone landscape
-    final BoxConstraints dialogConstraints =
-        BoxConstraints(minWidth: mediaQuery.size.width * constraintsFactor);
+        ? mediaQuery.size.width > 600
+              ? 0.6 // tablet portrait
+              : 1.0 // phone portrait
+        : mediaQuery.size.height > 600
+        ? 0.375 // tablet landscape
+        : 0.6; // phone landscape
+    final BoxConstraints dialogConstraints = BoxConstraints(
+      minWidth: mediaQuery.size.width * constraintsFactor,
+    );
 
     return AnimatedPadding(
       padding: effectivePadding,
@@ -219,18 +226,21 @@ class OneUIDialog extends StatelessWidget {
           child: ConstrainedBox(
             constraints: dialogConstraints,
             child: Material(
-              color: useOneUITheme
-                  ? isDark
-                      ? const Color(0xff252525)
-                      : const Color(0xfffcfcfc)
-                  : backgroundColor ??
-                      dialogTheme.backgroundColor ??
-                      Theme.of(context).dialogBackgroundColor,
+              color:
+                  backgroundColor ??
+                  (useOneUITheme
+                      ? isDark
+                            ? const Color(0xff252525)
+                            : const Color(0xfffcfcfc)
+                      : dialogTheme.backgroundColor ??
+                            Theme.of(context).colorScheme.surface),
               elevation:
                   elevation ?? dialogTheme.elevation ?? _defaultElevation,
-              shape: useOneUITheme
-                  ? _defaultDialogShape
-                  : shape ?? dialogTheme.shape ?? _defaultDialogShape,
+              shape:
+                  shape ??
+                  (useOneUITheme
+                      ? _defaultDialogShape
+                      : dialogTheme.shape ?? _defaultDialogShape),
               type: MaterialType.card,
               clipBehavior: clipBehavior,
               child: child,
@@ -244,7 +254,7 @@ class OneUIDialog extends StatelessWidget {
 
 class OneUIAlertDialog extends StatelessWidget {
   const OneUIAlertDialog({
-    Key? key,
+    super.key,
     this.title,
     this.titlePadding,
     this.titleTextStyle,
@@ -263,7 +273,7 @@ class OneUIAlertDialog extends StatelessWidget {
     this.shape,
     this.scrollable = false,
     this.useOneUITheme = true,
-  }) : super(key: key);
+  });
 
   /// The (optional) title of the dialog is displayed in a large font at the top
   /// of the dialog.
@@ -285,8 +295,8 @@ class OneUIAlertDialog extends StatelessWidget {
 
   /// Style for the text in the [title] of this [OneUIAlertDialog].
   ///
-  /// If null, [DialogTheme.titleTextStyle] is used. If that's null, defaults to
-  /// [TextTheme.headline6] of [ThemeData.textTheme].
+  /// If null, [DialogThemeData.titleTextStyle] is used. If that's null,
+  /// defaults to [TextTheme.titleLarge] of [ThemeData.textTheme].
   final TextStyle? titleTextStyle;
 
   /// The (optional) content of the dialog is displayed in the center of the
@@ -308,23 +318,19 @@ class OneUIAlertDialog extends StatelessWidget {
 
   /// Style for the text in the [content] of this [OneUIAlertDialog].
   ///
-  /// If null, [DialogTheme.contentTextStyle] is used. If that's null, defaults
-  /// to [TextTheme.subtitle1] of [ThemeData.textTheme].
+  /// If null, [DialogThemeData.contentTextStyle] is used. If that's null,
+  /// defaults to [TextTheme.titleMedium] of [ThemeData.textTheme].
   final TextStyle? contentTextStyle;
 
   /// The (optional) set of actions that are displayed at the bottom of the
   /// dialog.
   ///
-  /// Typically this is a list of [TextButton] widgets. It is recommended to
-  /// set the [Text.textAlign] to [TextAlign.end] for the [Text] within the
-  /// [TextButton], so that buttons whose labels wrap to an extra line align
-  /// with the overall [ButtonBar]'s alignment within the dialog.
+  /// Each [OneUIDialogAction] is rendered as a [OneUIFlatButton].
   ///
-  /// These widgets will be wrapped in a [ButtonBar], which introduces 8 pixels
-  /// of padding on each side.
+  /// These widgets will be wrapped in an [OverflowBar].
   ///
   /// If the [title] is not null but the [content] _is_ null, then an extra 20
-  /// pixels of padding is added above the [ButtonBar] to separate the [title]
+  /// pixels of padding is added above the [OverflowBar] to separate the [title]
   /// from the [actions].
   final List<OneUIDialogAction>? actions;
 
@@ -333,8 +339,8 @@ class OneUIAlertDialog extends StatelessWidget {
   /// Typically used to provide padding to the button bar between the button bar
   /// and the edges of the dialog.
   ///
-  /// If are no [actions], then no padding will be included. The padding around
-  /// the button bar defaults to zero. It is also important to note that
+  /// If there are no [actions], no padding is included. The padding defaults to
+  /// 24 pixels on the left and right and 16 pixels on the bottom. Note that
   /// [buttonPadding] may contribute to the padding on the edges of [actions] as
   /// well.
   final EdgeInsetsGeometry actionsPadding;
@@ -350,9 +356,7 @@ class OneUIAlertDialog extends StatelessWidget {
   /// property is set to [VerticalDirection.up], since it "starts" at the
   /// bottom and "ends" at the top.
   ///
-  /// If null then it will use the surrounding
-  /// [ButtonBarThemeData.overflowDirection]. If that is null, it will
-  /// default to [VerticalDirection.down].
+  /// If null, it defaults to [VerticalDirection.down].
   final VerticalDirection? actionsOverflowDirection;
 
   /// The spacing between [actions] when the button bar overflows.
@@ -363,11 +367,10 @@ class OneUIAlertDialog extends StatelessWidget {
   ///
   /// Note that the button spacing may appear to be more than
   /// the value provided. This is because most buttons adhere to the
-  /// [MaterialTapTargetSize] of 48px. So, even though a button
-  /// might visually be 36px in height, it might still take up to
-  /// 48px vertically.
+  /// [MaterialTapTargetSize] of 48 logical pixels. Therefore, even when a button
+  /// is visually 36 logical pixels high, it can occupy 48 logical pixels.
   ///
-  /// If null then no spacing will be added in between buttons in
+  /// If null, no spacing is added between buttons in
   /// an overflow state.
   final double? actionsOverflowButtonSpacing;
 
@@ -376,8 +379,7 @@ class OneUIAlertDialog extends StatelessWidget {
   /// This is different from [actionsPadding], which defines the padding
   /// between the entire button bar and the edges of the dialog.
   ///
-  /// If this property is null, then it will default to
-  /// 8.0 logical pixels on the left and right.
+  /// If this property is null, no additional padding is added.
   final EdgeInsetsGeometry? buttonPadding;
 
   /// {@macro flutter.material.dialog.backgroundColor}
@@ -386,11 +388,11 @@ class OneUIAlertDialog extends StatelessWidget {
   /// The semantic label of the dialog used by accessibility frameworks to
   /// announce screen transitions when the dialog is opened and closed.
   ///
-  /// In iOS, if this label is not provided, a semantic label will be inferred
-  /// from the [title] if it is not null.
+  /// On iOS and macOS, [title] supplies the route semantics when this label is
+  /// not provided.
   ///
-  /// In Android, if this label is not provided, the dialog will use the
-  /// [MaterialLocalizations.alertDialogLabel] as its label.
+  /// On other platforms, [MaterialLocalizations.alertDialogLabel] is used when
+  /// this label is not provided.
   final String? semanticLabel;
 
   /// {@macro oneui.dialog.insetPadding}
@@ -417,7 +419,7 @@ class OneUIAlertDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final DialogTheme dialogTheme = DialogTheme.of(context);
+    final DialogThemeData dialogTheme = DialogTheme.of(context);
 
     String? label = semanticLabel;
     switch (theme.platform) {
@@ -433,17 +435,25 @@ class OneUIAlertDialog extends StatelessWidget {
 
     // The paddingScaleFactor is used to adjust the padding of Dialog's
     // children.
-    final double paddingScaleFactor =
-        _paddingScaleFactor(MediaQuery.of(context).textScaleFactor);
+    const double fontSizeToScale = 14.0;
+    final double effectiveTextScale =
+        MediaQuery.textScalerOf(context).scale(fontSizeToScale) /
+        fontSizeToScale;
+    final double paddingScaleFactor = _paddingScaleFactor(effectiveTextScale);
     final TextDirection? textDirection = Directionality.maybeOf(context);
 
     Widget? titleWidget;
     Widget? contentWidget;
     Widget? actionsWidget;
     List<Widget> actionsChildren = [];
+    final bool hasActions = actions?.isNotEmpty ?? false;
     if (title != null) {
-      final EdgeInsets defaultTitlePadding =
-          EdgeInsets.fromLTRB(24.0, 24.0, 24.0, content == null ? 20.0 : 0.0);
+      final EdgeInsets defaultTitlePadding = EdgeInsets.fromLTRB(
+        24.0,
+        24.0,
+        24.0,
+        content == null ? 20.0 : 0.0,
+      );
       final EdgeInsets effectiveTitlePadding =
           titlePadding?.resolve(textDirection) ?? defaultTitlePadding;
       titleWidget = Padding(
@@ -454,21 +464,23 @@ class OneUIAlertDialog extends StatelessWidget {
           bottom: effectiveTitlePadding.bottom * paddingScaleFactor,
         ),
         child: DefaultTextStyle(
-          style: titleTextStyle ??
+          style:
+              titleTextStyle ??
               dialogTheme.titleTextStyle ??
-              theme.textTheme.headline6!,
+              theme.textTheme.titleLarge!,
           child: Semantics(
-            child: title,
             namesRoute: label == null,
             container: true,
+            child: title,
           ),
         ),
       );
     }
 
     if (content != null) {
-      final EdgeInsets effectiveContentPadding =
-          contentPadding.resolve(textDirection);
+      final EdgeInsets effectiveContentPadding = contentPadding.resolve(
+        textDirection,
+      );
       contentWidget = Padding(
         padding: EdgeInsets.only(
           left: effectiveContentPadding.left * paddingScaleFactor,
@@ -479,17 +491,19 @@ class OneUIAlertDialog extends StatelessWidget {
           bottom: effectiveContentPadding.bottom,
         ),
         child: DefaultTextStyle(
-          style: contentTextStyle ??
+          style:
+              contentTextStyle ??
               dialogTheme.contentTextStyle ??
-              theme.textTheme.subtitle1!,
+              theme.textTheme.titleMedium!,
           child: content!,
         ),
       );
     }
 
-    if (actions != null) {
+    if (hasActions) {
       for (OneUIDialogAction action in actions!) {
-        final Widget actionWidget = Expanded(
+        final Widget actionWidget = Padding(
+          padding: buttonPadding ?? EdgeInsets.zero,
           child: OneUIFlatButton(
             onPressed: action.onPressed,
             onLongPress: action.onLongPress,
@@ -497,26 +511,19 @@ class OneUIAlertDialog extends StatelessWidget {
             focusNode: action.focusNode,
             autofocus: action.autofocus,
             clipBehavior: action.clipBehavior,
-            child: action.child,
             useOneUISplashFactory: action.useOneUISplashFactory,
+            child: action.child,
           ),
         );
-        actionsChildren.addAll([
-          actionWidget,
-          const SizedBox(
-            height: 16,
-            child: VerticalDivider(
-              width: 12.0,
-              thickness: 1.0,
-            ),
-          ),
-        ]);
+        actionsChildren.add(actionWidget);
       }
-      actionsChildren.removeLast();
       actionsWidget = Padding(
         padding: actionsPadding,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: OverflowBar(
+          alignment: MainAxisAlignment.spaceEvenly,
+          overflowAlignment: OverflowBarAlignment.center,
+          overflowDirection: actionsOverflowDirection ?? VerticalDirection.down,
+          overflowSpacing: actionsOverflowButtonSpacing ?? 0.0,
           children: actionsChildren,
         ),
       );
@@ -538,13 +545,13 @@ class OneUIAlertDialog extends StatelessWidget {
               ),
             ),
           ),
-        if (actions != null) actionsWidget!,
+        if (hasActions) actionsWidget!,
       ];
     } else {
       columnChildren = <Widget>[
         if (title != null) titleWidget!,
         if (content != null) Flexible(child: contentWidget!),
-        if (actions != null) actionsWidget!,
+        if (hasActions) actionsWidget!,
       ];
     }
 
@@ -571,15 +578,16 @@ class OneUIAlertDialog extends StatelessWidget {
       insetPadding: insetPadding,
       clipBehavior: clipBehavior,
       shape: shape,
-      child: dialogChild,
       useOneUITheme: useOneUITheme,
+      child: dialogChild,
     );
   }
 }
 
 double _paddingScaleFactor(double textScaleFactor) {
-  final double clampedTextScaleFactor =
-      textScaleFactor.clamp(1.0, 2.0).toDouble();
+  final double clampedTextScaleFactor = textScaleFactor
+      .clamp(1.0, 2.0)
+      .toDouble();
   return lerpDouble(1.0, 1.0 / 3.0, clampedTextScaleFactor - 1.0)!;
 }
 

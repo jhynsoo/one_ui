@@ -1,7 +1,6 @@
-library one_ui;
-
 export 'package:one_ui/src/effects/ink_ripple.dart';
 export 'package:one_ui/src/effects/ink_splash.dart';
+export 'package:one_ui/src/theme/theme.dart';
 
 export 'package:one_ui/src/widgets/appbar/appbar.dart';
 export 'package:one_ui/src/widgets/bottom_navigation_bar/bottom_navigation_bar.dart';

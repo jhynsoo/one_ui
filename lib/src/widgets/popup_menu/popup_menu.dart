@@ -28,9 +28,8 @@ class OneUIPopupMenuItem<T> extends PopupMenuEntry<T> {
   ///
   /// By default, the item is [enabled].
   ///
-  /// The `enabled` and `height` arguments must not be null.
   const OneUIPopupMenuItem({
-    Key? key,
+    super.key,
     this.value,
     this.enabled = true,
     this.height = 40.0,
@@ -39,7 +38,7 @@ class OneUIPopupMenuItem<T> extends PopupMenuEntry<T> {
     this.mouseCursor,
     this.useOneUISplashFactory = true,
     required this.child,
-  }) : super(key: key);
+  });
 
   /// The value that will be returned by [showMenu] if this entry is selected.
   final T? value;
@@ -58,29 +57,29 @@ class OneUIPopupMenuItem<T> extends PopupMenuEntry<T> {
 
   /// The padding of the menu item.
   ///
-  /// Note that [height] may interact with the applied padding. For example,
-  /// If a [height] greater than the height of the sum of the padding and [child]
-  /// is provided, then the padding's effect will not be visible.
+  /// Note that [height] may interact with the applied padding. For example, if
+  /// [height] exceeds the combined height of the padding and [child], the
+  /// padding may not be visible.
   ///
-  /// When null, the horizontal padding defaults to 16.0 on both sides.
+  /// When null, the horizontal padding defaults to 26.0 on both sides.
   final EdgeInsets? padding;
 
   /// The text style of the popup menu item.
   ///
   /// If this property is null, then [PopupMenuThemeData.textStyle] is used.
-  /// If [PopupMenuThemeData.textStyle] is also null, then [TextTheme.subtitle1]
+  /// If [PopupMenuThemeData.textStyle] is also null, then [TextTheme.titleMedium]
   /// of [ThemeData.textTheme] is used.
   final TextStyle? textStyle;
 
   /// The cursor for a mouse pointer when it enters or is hovering over the
   /// widget.
   ///
-  /// If [mouseCursor] is a [MaterialStateProperty<MouseCursor>],
-  /// [MaterialStateProperty.resolve] is used for the following [MaterialState]:
+  /// If [mouseCursor] is a [WidgetStateProperty<MouseCursor>],
+  /// [WidgetStateProperty.resolve] is used for the following [WidgetState]:
   ///
-  ///  * [MaterialState.disabled].
+  ///  * [WidgetState.disabled].
   ///
-  /// If this property is null, [MaterialStateMouseCursor.clickable] will be used.
+  /// If this property is null, [WidgetStateMouseCursor.clickable] will be used.
   final MouseCursor? mouseCursor;
 
   /// The widget below this widget in the tree.
@@ -90,7 +89,8 @@ class OneUIPopupMenuItem<T> extends PopupMenuEntry<T> {
   /// case, the text should be short enough that it won't wrap.
   final Widget? child;
 
-  /// If true, use [OneUIInkRipple.splashFactory] instead of default splash factory.
+  /// Whether to use [OneUIInkRipple.splashFactory] instead of the ambient
+  /// splash factory.
   final bool useOneUISplashFactory;
 
   @override
@@ -103,8 +103,8 @@ class OneUIPopupMenuItem<T> extends PopupMenuEntry<T> {
 
 /// The [State] for [OneUIPopupMenuItem] subclasses.
 ///
-/// By default this implements the basic styling and layout of Material Design
-/// popup menu items.
+/// By default this implements the basic styling and layout of One UI popup menu
+/// items.
 ///
 /// The [buildChild] method can be overridden to adjust exactly what gets placed
 /// in the menu. By default it returns [OneUIPopupMenuItem.child].
@@ -115,8 +115,8 @@ class OneUIPopupMenuItem<T> extends PopupMenuEntry<T> {
 ///
 /// This class takes two type arguments. The second, `W`, is the exact type of
 /// the [Widget] that is using this [State]. It must be a subclass of
-/// [OneUIPopupMenuItem]. The first, `T`, must match the type argument of that widget
-/// class, and is the type of values returned from this menu.
+/// [OneUIPopupMenuItem]. The first, `T`, must match that widget's type argument
+/// and is the type of values returned from the menu.
 
 class OneUIPopupMenuItemState<T, W extends OneUIPopupMenuItem<T>>
     extends State<W> {
@@ -133,8 +133,8 @@ class OneUIPopupMenuItemState<T, W extends OneUIPopupMenuItem<T>>
   ///
   /// Used by the [InkWell] inserted by the [build] method.
   ///
-  /// By default, uses [Navigator.pop] to return the [PopupMenuItem.value] from
-  /// the menu route.
+  /// By default, uses [Navigator.pop] to return
+  /// [OneUIPopupMenuItem.value] from the menu route.
   @protected
   void handleTap() {
     Navigator.pop<T>(context, widget.value);
@@ -144,9 +144,10 @@ class OneUIPopupMenuItemState<T, W extends OneUIPopupMenuItem<T>>
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final PopupMenuThemeData popupMenuTheme = PopupMenuTheme.of(context);
-    TextStyle style = widget.textStyle ??
+    TextStyle style =
+        widget.textStyle ??
         popupMenuTheme.textStyle ??
-        theme.textTheme.subtitle1!;
+        theme.textTheme.titleMedium!;
 
     if (!widget.enabled) style = style.copyWith(color: theme.disabledColor);
 
@@ -156,7 +157,8 @@ class OneUIPopupMenuItemState<T, W extends OneUIPopupMenuItem<T>>
       child: Container(
         alignment: AlignmentDirectional.centerStart,
         constraints: BoxConstraints(minHeight: widget.height),
-        padding: widget.padding ??
+        padding:
+            widget.padding ??
             const EdgeInsets.symmetric(horizontal: _kMenuHorizontalPadding),
         child: buildChild(),
       ),
@@ -170,12 +172,10 @@ class OneUIPopupMenuItemState<T, W extends OneUIPopupMenuItem<T>>
       );
     }
     final MouseCursor effectiveMouseCursor =
-        MaterialStateProperty.resolveAs<MouseCursor>(
-      widget.mouseCursor ?? MaterialStateMouseCursor.clickable,
-      <MaterialState>{
-        if (!widget.enabled) MaterialState.disabled,
-      },
-    );
+        WidgetStateProperty.resolveAs<MouseCursor>(
+          widget.mouseCursor ?? WidgetStateMouseCursor.clickable,
+          <WidgetState>{if (!widget.enabled) WidgetState.disabled},
+        );
 
     return MergeSemantics(
       child: Semantics(
@@ -200,11 +200,7 @@ class OneUIPopupMenuItemState<T, W extends OneUIPopupMenuItem<T>>
 // y coordinate of the menu's origin so that the center of selected menu
 // item lines up with the center of its PopupMenuButton.
 class _MenuItem extends SingleChildRenderObjectWidget {
-  const _MenuItem({
-    Key? key,
-    required this.onLayout,
-    required Widget? child,
-  }) : super(key: key, child: child);
+  const _MenuItem({required this.onLayout, required super.child});
 
   final ValueChanged<Size> onLayout;
 
@@ -215,7 +211,9 @@ class _MenuItem extends SingleChildRenderObjectWidget {
 
   @override
   void updateRenderObject(
-      BuildContext context, covariant _RenderMenuItem renderObject) {
+    BuildContext context,
+    covariant _RenderMenuItem renderObject,
+  ) {
     renderObject.onLayout = onLayout;
   }
 }
@@ -249,10 +247,10 @@ class _RenderMenuItem extends RenderShiftedBox {
 
 class _PopupMenu<T> extends StatelessWidget {
   const _PopupMenu({
-    Key? key,
+    super.key,
     required this.route,
     required this.semanticLabel,
-  }) : super(key: key);
+  });
 
   final _PopupMenuRoute<T> route;
   final String? semanticLabel;
@@ -266,10 +264,7 @@ class _PopupMenu<T> extends StatelessWidget {
       Widget item = route.items[i];
       if (route.initialValue != null &&
           route.items[i].represents(route.initialValue)) {
-        item = Container(
-          color: Theme.of(context).highlightColor,
-          child: item,
-        );
+        item = Container(color: Theme.of(context).highlightColor, child: item);
       }
       children.add(
         _MenuItem(
@@ -295,9 +290,7 @@ class _PopupMenu<T> extends StatelessWidget {
           namesRoute: true,
           explicitChildNodes: true,
           label: semanticLabel,
-          child: SingleChildScrollView(
-            child: ListBody(children: children),
-          ),
+          child: SingleChildScrollView(child: ListBody(children: children)),
         ),
       ),
     );
@@ -306,10 +299,9 @@ class _PopupMenu<T> extends StatelessWidget {
       opacity: opacity.animate(route.animation!),
       child: ScaleTransition(
         alignment: Alignment.topRight,
-        scale: Tween<double>(begin: 0.7, end: 1.0).animate(CurvedAnimation(
-          parent: route.animation!,
-          curve: Curves.ease,
-        )),
+        scale: Tween<double>(begin: 0.7, end: 1.0).animate(
+          CurvedAnimation(parent: route.animation!, curve: Curves.ease),
+        ),
         child: Material(
           // shape: route.shape ?? popupMenuTheme.shape,
           borderRadius: route.borderRadius ?? _kRadius,
@@ -330,8 +322,12 @@ class _PopupMenu<T> extends StatelessWidget {
 
 // Positioning of the menu on the screen.
 class _PopupMenuRouteLayout extends SingleChildLayoutDelegate {
-  _PopupMenuRouteLayout(this.position, this.itemSizes, this.selectedItemIndex,
-      this.textDirection);
+  _PopupMenuRouteLayout(
+    this.position,
+    this.itemSizes,
+    this.selectedItemIndex,
+    this.textDirection,
+  );
 
   // Rectangle of underlying button, relative to the overlay's dimensions.
   final RelativeRect position;
@@ -351,8 +347,9 @@ class _PopupMenuRouteLayout extends SingleChildLayoutDelegate {
   BoxConstraints getConstraintsForChild(BoxConstraints constraints) {
     // The menu can be at most the size of the overlay minus 8.0 pixels in each
     // direction.
-    return BoxConstraints.loose(constraints.biggest)
-        .deflate(const EdgeInsets.all(_kMenuScreenPadding));
+    return BoxConstraints.loose(
+      constraints.biggest,
+    ).deflate(const EdgeInsets.all(_kMenuScreenPadding));
   }
 
   @override
@@ -369,7 +366,8 @@ class _PopupMenuRouteLayout extends SingleChildLayoutDelegate {
         selectedItemOffset += itemSizes[index]!.height;
       }
       selectedItemOffset += itemSizes[selectedItemIndex!]!.height / 2;
-      y = position.top +
+      y =
+          position.top +
           (size.height - position.top - position.bottom) / 2.0 -
           selectedItemOffset;
     }
@@ -473,19 +471,26 @@ class _PopupMenuRoute<T> extends PopupRoute<T> {
   final String barrierLabel;
 
   @override
-  Widget buildPage(BuildContext context, Animation<double> animation,
-      Animation<double> secondaryAnimation) {
+  Widget buildPage(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+  ) {
     int? selectedItemIndex;
     if (initialValue != null) {
-      for (int index = 0;
-          selectedItemIndex == null && index < items.length;
-          index += 1) {
+      for (
+        int index = 0;
+        selectedItemIndex == null && index < items.length;
+        index += 1
+      ) {
         if (items[index].represents(initialValue)) selectedItemIndex = index;
       }
     }
 
-    final Widget menu =
-        _PopupMenu<T>(route: this, semanticLabel: semanticLabel);
+    final Widget menu = _PopupMenu<T>(
+      route: this,
+      semanticLabel: semanticLabel,
+    );
 
     return SafeArea(
       child: Builder(
@@ -505,9 +510,9 @@ class _PopupMenuRoute<T> extends PopupRoute<T> {
   }
 }
 
-/// Show a popup menu that contains the `items` at `position`.
+/// Shows a popup menu that contains [items] at [position].
 ///
-/// `items` should be non-null and not empty.
+/// The [items] list must not be empty.
 ///
 /// If `initialValue` is specified then the first item with a matching value
 /// will be highlighted and the value of `position` gives the rectangle whose
@@ -535,7 +540,7 @@ class _PopupMenuRoute<T> extends PopupRoute<T> {
 /// in the list.
 ///
 /// The `elevation` argument specifies the z-coordinate at which to place the
-/// menu. The elevation defaults to 8, the appropriate elevation for popup
+/// menu. The elevation defaults to 2, the appropriate elevation for popup
 /// menus.
 ///
 /// The `context` argument is used to look up the [Navigator] and [Theme] for
@@ -567,35 +572,48 @@ Future<T?> showMenu<T>({
 
   semanticLabel ??= MaterialLocalizations.of(context).popupMenuLabel;
 
-  final NavigatorState navigator =
-      Navigator.of(context, rootNavigator: useRootNavigator);
-  return navigator.push(_PopupMenuRoute<T>(
-    position: position,
-    items: items,
-    initialValue: initialValue,
-    elevation: elevation,
-    semanticLabel: semanticLabel,
-    barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-    // shape: shape,
-    borderRadius: borderRadius,
-    color: color,
-    capturedThemes:
-        InheritedTheme.capture(from: context, to: navigator.context),
-  ));
+  final NavigatorState navigator = Navigator.of(
+    context,
+    rootNavigator: useRootNavigator,
+  );
+  return navigator.push(
+    _PopupMenuRoute<T>(
+      position: position,
+      items: items,
+      initialValue: initialValue,
+      elevation: elevation,
+      semanticLabel: semanticLabel,
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      // shape: shape,
+      borderRadius: borderRadius,
+      color: color,
+      capturedThemes: InheritedTheme.capture(
+        from: context,
+        to: navigator.context,
+      ),
+    ),
+  );
 }
+
+/// Builds an interactive trigger for a [OneUIPopupMenuButton].
+typedef OneUIPopupMenuButtonBuilder =
+    Widget Function(
+      BuildContext context,
+      VoidCallback? onPressed,
+      bool enableFeedback,
+    );
 
 /// Displays a menu when pressed and calls [onSelected] when the menu is dismissed
 /// because an item was selected. The value passed to [onSelected] is the value of
 /// the selected menu item.
 ///
-/// One of [child] or [icon] may be provided, but not both. If [icon] is provided,
-/// then [OneUIPopupMenuButton] behaves like an [OneUIIconButton].
+/// One of [buttonBuilder], [child], or [icon] may be provided. If [icon] is
+/// provided, then [OneUIPopupMenuButton] behaves like a [OneUIIconButton].
 ///
-/// If both are null, then a standard overflow icon is created (depending on the
-/// platform).
+/// If all are null, a standard vertical overflow icon is created.
 class OneUIPopupMenuButton<T> extends StatefulWidget {
   const OneUIPopupMenuButton({
-    Key? key,
+    super.key,
     required this.itemBuilder,
     this.initialValue,
     this.onSelected,
@@ -603,6 +621,7 @@ class OneUIPopupMenuButton<T> extends StatefulWidget {
     this.tooltip,
     this.elevation,
     this.padding = const EdgeInsets.all(8.0),
+    this.buttonBuilder,
     this.child,
     this.icon,
     this.iconSize,
@@ -611,9 +630,14 @@ class OneUIPopupMenuButton<T> extends StatefulWidget {
     this.borderRadius,
     this.color,
     this.enableFeedback,
-  })  : assert(!(child != null && icon != null),
-            'You can only pass [child] or [icon], not both.'),
-        super(key: key);
+  }) : assert(
+         !(child != null && icon != null),
+         'You can only pass [child] or [icon], not both.',
+       ),
+       assert(
+         buttonBuilder == null || (child == null && icon == null),
+         'You can only pass one of [buttonBuilder], [child], or [icon].',
+       );
 
   /// Called when the button is pressed to create the items to show in the menu.
   final PopupMenuItemBuilder<T> itemBuilder;
@@ -644,10 +668,18 @@ class OneUIPopupMenuButton<T> extends StatefulWidget {
   /// Defaults to 2, the appropriate elevation for popup menus.
   final double? elevation;
 
-  /// Matches IconButton's 8 dps padding by default. In some cases, notably where
-  /// this button appears as the trailing element of a list item, it's useful to be able
-  /// to set the padding to zero.
+  /// The padding around an icon trigger.
+  ///
+  /// Defaults to 8 logical pixels on every side.
   final EdgeInsetsGeometry padding;
+
+  /// Builds a button that opens the popup menu.
+  ///
+  /// The supplied callback is null when [enabled] is false. The resolved
+  /// [enableFeedback] value is also supplied so the trigger can preserve this
+  /// button's feedback behavior. Use this when the trigger needs to own its
+  /// pressed, hover, focus, or splash appearance.
+  final OneUIPopupMenuButtonBuilder? buttonBuilder;
 
   /// If provided, [child] is the widget used for this button
   /// and the button will utilize an [InkWell] for taps.
@@ -665,13 +697,13 @@ class OneUIPopupMenuButton<T> extends StatefulWidget {
 
   /// Whether this popup menu button is interactive.
   ///
-  /// Must be non-null, defaults to `true`
+  /// Defaults to true. When true, the button responds to presses by displaying
+  /// the menu.
   ///
-  /// If `true` the button will respond to presses by displaying the menu.
-  ///
-  /// If `false`, the button is styled with the disabled color from the
-  /// current [Theme] and will not respond to presses or show the popup
-  /// menu and [onSelected], [onCanceled] and [itemBuilder] will not be called.
+  /// When false, the icon trigger uses its disabled style, the child trigger
+  /// disables taps, and [buttonBuilder] receives a null callback so it can apply
+  /// its own disabled style. The menu is not shown and [onSelected],
+  /// [onCanceled], and [itemBuilder] are not called.
   ///
   /// This can be useful in situations where the app needs to show the button,
   /// but doesn't currently have anything to show in the menu.
@@ -679,7 +711,7 @@ class OneUIPopupMenuButton<T> extends StatefulWidget {
 
   /// If provided, the border radius used for the menu.
   ///
-  /// The default value is [_kRadius].
+  /// Defaults to a circular radius of 26 logical pixels.
   final BorderRadius? borderRadius;
 
   /// If provided, the background color used for the menu.
@@ -693,15 +725,17 @@ class OneUIPopupMenuButton<T> extends StatefulWidget {
   ///
   /// For example, on Android a tap will produce a clicking sound and a
   /// long-press will produce a short vibration, when feedback is enabled.
+  ///
+  /// If null, [PopupMenuThemeData.enableFeedback] is used, falling back to true.
   final bool? enableFeedback;
 
   /// If provided, the size of the [Icon].
   ///
-  /// If this property is null, the default size is 24.0 pixels.
+  /// If this property is null, the default size is 20.0 logical pixels.
   final double? iconSize;
 
   @override
-  _OneUIPopupMenuButtonState<T> createState() =>
+  State<OneUIPopupMenuButton<T>> createState() =>
       _OneUIPopupMenuButtonState<T>();
 }
 
@@ -715,8 +749,9 @@ class _OneUIPopupMenuButtonState<T> extends State<OneUIPopupMenuButton<T>> {
       Rect.fromPoints(
         button.localToGlobal(widget.offset, ancestor: overlay),
         button.localToGlobal(
-            button.size.bottomRight(Offset.zero) + widget.offset,
-            ancestor: overlay),
+          button.size.bottomRight(Offset.zero) + widget.offset,
+          ancestor: overlay,
+        ),
       ),
       Offset.zero & overlay.size,
     );
@@ -743,7 +778,8 @@ class _OneUIPopupMenuButtonState<T> extends State<OneUIPopupMenuButton<T>> {
   }
 
   bool get _canRequestFocus {
-    final NavigationMode mode = MediaQuery.maybeOf(context)?.navigationMode ??
+    final NavigationMode mode =
+        MediaQuery.maybeOf(context)?.navigationMode ??
         NavigationMode.traditional;
     switch (mode) {
       case NavigationMode.traditional:
@@ -755,11 +791,24 @@ class _OneUIPopupMenuButtonState<T> extends State<OneUIPopupMenuButton<T>> {
 
   @override
   Widget build(BuildContext context) {
-    final bool enableFeedback = widget.enableFeedback ??
+    assert(debugCheckHasMaterialLocalizations(context));
+
+    final bool enableFeedback =
+        widget.enableFeedback ??
         PopupMenuTheme.of(context).enableFeedback ??
         true;
 
-    assert(debugCheckHasMaterialLocalizations(context));
+    if (widget.buttonBuilder != null) {
+      return Tooltip(
+        message:
+            widget.tooltip ?? MaterialLocalizations.of(context).showMenuTooltip,
+        child: widget.buttonBuilder!(
+          context,
+          widget.enabled ? showButtonMenu : null,
+          enableFeedback,
+        ),
+      );
+    }
 
     if (widget.child != null) {
       return Tooltip(
@@ -768,17 +817,21 @@ class _OneUIPopupMenuButtonState<T> extends State<OneUIPopupMenuButton<T>> {
         child: InkWell(
           onTap: widget.enabled ? showButtonMenu : null,
           canRequestFocus: _canRequestFocus,
-          child: widget.child,
           enableFeedback: enableFeedback,
           splashFactory: OneUIInkSplash.splashFactory,
+          child: widget.child,
         ),
       );
     }
 
     return OneUIIconButton(
       splashRadius: 16,
-      iconSize: 20,
+      padding: widget.padding,
+      iconSize: widget.iconSize ?? 20,
       onPressed: widget.enabled ? showButtonMenu : null,
+      enableFeedback: enableFeedback,
+      tooltip:
+          widget.tooltip ?? MaterialLocalizations.of(context).showMenuTooltip,
       icon: widget.icon ?? const Icon(Icons.more_vert),
     );
   }

@@ -1,21 +1,26 @@
 name: one_ui_example
 description: A Flutter application showcasing how to use one_ui package.
-publish_to: 'none'
+publish_to: "none"
+version: 1.0.0+1
 
 environment:
-  sdk: ">=2.12.0 <3.0.0"
+  sdk: ">=3.9.0 <4.0.0"
+  flutter: ">=3.35.0"
 
 dependencies:
+  dynamic_color: ^1.8.1
   flutter:
     sdk: flutter
 
-  cupertino_icons: ^1.0.2
   one_ui:
     path: ../
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  integration_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
 
 flutter:
   uses-material-design: true

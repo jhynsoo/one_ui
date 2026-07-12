@@ -1,32 +1,22 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:one_ui/src/effects/ink_ripple.dart';
+import 'package:one_ui/src/theme/theme.dart';
 
 class OneUIContainedButton extends ButtonStyleButton {
   const OneUIContainedButton({
-    Key? key,
-    required VoidCallback? onPressed,
-    VoidCallback? onLongPress,
-    ValueChanged<bool>? onHover,
-    ValueChanged<bool>? onFocusChange,
-    ButtonStyle? style,
-    FocusNode? focusNode,
-    bool autofocus = false,
-    Clip clipBehavior = Clip.none,
+    super.key,
+    required super.onPressed,
+    super.onLongPress,
+    super.onHover,
+    super.onFocusChange,
+    super.style,
+    super.focusNode,
+    super.autofocus = false,
+    super.clipBehavior = Clip.none,
     required Widget? child,
     this.useOneUISplashFactory = true,
-  }) : super(
-          key: key,
-          onPressed: onPressed,
-          onLongPress: onLongPress,
-          onHover: onHover,
-          onFocusChange: onFocusChange,
-          style: style,
-          focusNode: focusNode,
-          autofocus: autofocus,
-          clipBehavior: clipBehavior,
-          child: child,
-        );
+  }) : super(child: child ?? const SizedBox.shrink());
 
   final bool useOneUISplashFactory;
 
@@ -34,22 +24,24 @@ class OneUIContainedButton extends ButtonStyleButton {
   ButtonStyle defaultStyleOf(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
+    final OneUIColorScheme oneUIColorScheme = OneUIColorScheme.of(context);
     final InteractiveInkFeatureFactory splashFactory = useOneUISplashFactory
         ? OneUIInkRipple.splashFactory
         : theme.splashFactory;
 
     return styleFrom(
-      primary: colorScheme.primary,
+      primary: oneUIColorScheme.primaryDark,
       onPrimary: colorScheme.onPrimary,
       onSurface: colorScheme.onSurface,
       shadowColor: theme.shadowColor,
       elevation: 0.0,
-      textStyle: theme.textTheme.button,
+      textStyle: theme.textTheme.labelLarge,
       padding: _scaledPadding(context),
       minimumSize: const Size(64, 36),
       maximumSize: Size.infinite,
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(18))),
+        borderRadius: BorderRadius.all(Radius.circular(18)),
+      ),
       enabledMouseCursor: SystemMouseCursors.click,
       disabledMouseCursor: SystemMouseCursors.basic,
       visualDensity: theme.visualDensity,
@@ -84,26 +76,30 @@ class OneUIContainedButton extends ButtonStyleButton {
     AlignmentGeometry? alignment,
     InteractiveInkFeatureFactory? splashFactory,
   }) {
-    final MaterialStateProperty<Color?>? backgroundColor =
+    final WidgetStateProperty<Color?>? backgroundColor =
         (onSurface == null && primary == null)
-            ? null
-            : _ElevatedButtonDefaultBackground(primary, onSurface);
-    final MaterialStateProperty<Color?>? foregroundColor =
+        ? null
+        : _ElevatedButtonDefaultBackground(primary, onSurface);
+    final WidgetStateProperty<Color?>? foregroundColor =
         (onSurface == null && onPrimary == null)
-            ? null
-            : _ElevatedButtonDefaultForeground(onPrimary, onSurface);
-    final MaterialStateProperty<Color?>? overlayColor =
-        (onPrimary == null) ? null : _ElevatedButtonDefaultOverlay(onPrimary);
-    final MaterialStateProperty<double>? elevationValue =
-        (elevation == null) ? null : _ElevatedButtonDefaultElevation(elevation);
-    final MaterialStateProperty<MouseCursor?>? mouseCursor =
+        ? null
+        : _ElevatedButtonDefaultForeground(onPrimary, onSurface);
+    final WidgetStateProperty<Color?>? overlayColor = (onPrimary == null)
+        ? null
+        : _ElevatedButtonDefaultOverlay(onPrimary);
+    final WidgetStateProperty<double>? elevationValue = (elevation == null)
+        ? null
+        : _ElevatedButtonDefaultElevation(elevation);
+    final WidgetStateProperty<MouseCursor?>? mouseCursor =
         (enabledMouseCursor == null && disabledMouseCursor == null)
-            ? null
-            : _ElevatedButtonDefaultMouseCursor(
-                enabledMouseCursor, disabledMouseCursor);
+        ? null
+        : _ElevatedButtonDefaultMouseCursor(
+            enabledMouseCursor,
+            disabledMouseCursor,
+          );
 
     return ButtonStyle(
-      textStyle: MaterialStateProperty.all<TextStyle?>(textStyle),
+      textStyle: WidgetStatePropertyAll<TextStyle?>(textStyle),
       backgroundColor: backgroundColor,
       foregroundColor: foregroundColor,
       overlayColor: overlayColor,
@@ -135,16 +131,20 @@ class OneUIContainedButton extends ButtonStyleButton {
 }
 
 EdgeInsetsGeometry _scaledPadding(BuildContext context) {
+  final double defaultFontSize =
+      Theme.of(context).textTheme.labelLarge?.fontSize ?? 14.0;
+  final double effectiveTextScale =
+      MediaQuery.textScalerOf(context).scale(defaultFontSize) / defaultFontSize;
   return ButtonStyleButton.scaledPadding(
     const EdgeInsets.symmetric(horizontal: 16),
     const EdgeInsets.symmetric(horizontal: 8),
     const EdgeInsets.symmetric(horizontal: 4),
-    MediaQuery.maybeOf(context)?.textScaleFactor ?? 1,
+    effectiveTextScale,
   );
 }
 
 @immutable
-class _ElevatedButtonDefaultBackground extends MaterialStateProperty<Color?>
+class _ElevatedButtonDefaultBackground extends WidgetStateProperty<Color?>
     with Diagnosticable {
   _ElevatedButtonDefaultBackground(this.primary, this.onSurface);
 
@@ -152,15 +152,16 @@ class _ElevatedButtonDefaultBackground extends MaterialStateProperty<Color?>
   final Color? onSurface;
 
   @override
-  Color? resolve(Set<MaterialState> states) {
-    if (states.contains(MaterialState.disabled))
-      return onSurface?.withOpacity(0.12);
+  Color? resolve(Set<WidgetState> states) {
+    if (states.contains(WidgetState.disabled)) {
+      return onSurface?.withValues(alpha: 0.12);
+    }
     return primary;
   }
 }
 
 @immutable
-class _ElevatedButtonDefaultForeground extends MaterialStateProperty<Color?>
+class _ElevatedButtonDefaultForeground extends WidgetStateProperty<Color?>
     with Diagnosticable {
   _ElevatedButtonDefaultForeground(this.onPrimary, this.onSurface);
 
@@ -168,56 +169,64 @@ class _ElevatedButtonDefaultForeground extends MaterialStateProperty<Color?>
   final Color? onSurface;
 
   @override
-  Color? resolve(Set<MaterialState> states) {
-    if (states.contains(MaterialState.disabled))
-      return onSurface?.withOpacity(0.38);
+  Color? resolve(Set<WidgetState> states) {
+    if (states.contains(WidgetState.disabled)) {
+      return onSurface?.withValues(alpha: 0.38);
+    }
     return onPrimary;
   }
 }
 
 @immutable
-class _ElevatedButtonDefaultOverlay extends MaterialStateProperty<Color?>
+class _ElevatedButtonDefaultOverlay extends WidgetStateProperty<Color?>
     with Diagnosticable {
   _ElevatedButtonDefaultOverlay(this.onPrimary);
 
   final Color onPrimary;
 
   @override
-  Color? resolve(Set<MaterialState> states) {
-    if (states.contains(MaterialState.hovered))
-      return onPrimary.withOpacity(0.08);
-    if (states.contains(MaterialState.focused) ||
-        states.contains(MaterialState.pressed))
-      return onPrimary.withOpacity(0.24);
+  Color? resolve(Set<WidgetState> states) {
+    if (states.contains(WidgetState.hovered)) {
+      return onPrimary.withValues(alpha: 0.08);
+    }
+    if (states.contains(WidgetState.focused) ||
+        states.contains(WidgetState.pressed)) {
+      return onPrimary.withValues(alpha: 0.24);
+    }
     return null;
   }
 }
 
 @immutable
-class _ElevatedButtonDefaultElevation extends MaterialStateProperty<double>
+class _ElevatedButtonDefaultElevation extends WidgetStateProperty<double>
     with Diagnosticable {
   _ElevatedButtonDefaultElevation(this.elevation);
 
   final double elevation;
 
   @override
-  double resolve(Set<MaterialState> states) {
-    if (states.contains(MaterialState.disabled)) return 0;
+  double resolve(Set<WidgetState> states) {
+    if (states.contains(WidgetState.disabled)) {
+      return 0;
+    }
     return elevation;
   }
 }
 
 @immutable
 class _ElevatedButtonDefaultMouseCursor
-    extends MaterialStateProperty<MouseCursor?> with Diagnosticable {
+    extends WidgetStateProperty<MouseCursor?>
+    with Diagnosticable {
   _ElevatedButtonDefaultMouseCursor(this.enabledCursor, this.disabledCursor);
 
   final MouseCursor? enabledCursor;
   final MouseCursor? disabledCursor;
 
   @override
-  MouseCursor? resolve(Set<MaterialState> states) {
-    if (states.contains(MaterialState.disabled)) return disabledCursor;
+  MouseCursor? resolve(Set<WidgetState> states) {
+    if (states.contains(WidgetState.disabled)) {
+      return disabledCursor;
+    }
     return enabledCursor;
   }
 }

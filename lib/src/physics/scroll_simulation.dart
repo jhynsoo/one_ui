@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'dart:math' as math;
+
+import 'package:flutter/material.dart';
 
 const double _inflexion = 0.35;
 
@@ -9,8 +10,8 @@ class OneUIScrollSimulation extends Simulation {
     required this.velocity,
     required this.expandedHeight,
     this.friction = 0.015,
-    Tolerance tolerance = Tolerance.defaultTolerance,
-  }) : super(tolerance: tolerance) {
+    super.tolerance = Tolerance.defaultTolerance,
+  }) {
     _duration = _splineFlingDuration(velocity);
     _distance = _splineFlingDistance(velocity);
   }
@@ -22,7 +23,7 @@ class OneUIScrollSimulation extends Simulation {
   /// simulation.
   final double velocity;
 
-  /// The expanded height of [OneUiScrollView].
+  /// The expanded height of the collapsible app bar.
   final double expandedHeight;
 
   /// The amount of friction the particle experiences as it travels.
@@ -47,9 +48,9 @@ class OneUIScrollSimulation extends Simulation {
 
   // See getSplineDeceleration().
   double _splineDeceleration(double velocity) {
-    return math.log(_inflexion *
-        velocity.abs() /
-        (friction * _decelerationForFriction(0.84)));
+    return math.log(
+      _inflexion * velocity.abs() / (friction * _decelerationForFriction(0.84)),
+    );
   }
 
   // See getSplineFlingDuration().

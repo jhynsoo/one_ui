@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:one_ui/src/effects/bottom_navigation_bar_ink_splash.dart';
 import 'package:one_ui/src/widgets/bottom_navigation_bar/bottom_navigation_bar_item.dart';
@@ -7,7 +5,7 @@ import 'package:vector_math/vector_math_64.dart' show Vector3;
 
 class OneUIBottomNavigationBar extends StatefulWidget {
   const OneUIBottomNavigationBar({
-    Key? key,
+    super.key,
     required this.items,
     this.onTap,
     this.currentIndex = 0,
@@ -20,13 +18,14 @@ class OneUIBottomNavigationBar extends StatefulWidget {
     this.mouseCursor,
     this.enableFeedback,
     this.fontSize = 14.0,
-  })  : assert(items.length >= 2),
-        assert(0 <= currentIndex && currentIndex < items.length),
-        assert(selectedItemColor == null || fixedColor == null,
-            'Either selectedItemColor or fixedColor can be specified, but not both'),
-        assert(fontSize >= 0.0),
-        selectedItemColor = selectedItemColor ?? fixedColor,
-        super(key: key);
+  }) : assert(items.length >= 2),
+       assert(0 <= currentIndex && currentIndex < items.length),
+       assert(
+         selectedItemColor == null || fixedColor == null,
+         'Either selectedItemColor or fixedColor can be specified, but not both',
+       ),
+       assert(fontSize >= 0.0),
+       selectedItemColor = selectedItemColor ?? fixedColor;
 
   final List<OneUIBottomNavigationBarItem> items;
 
@@ -42,34 +41,44 @@ class OneUIBottomNavigationBar extends StatefulWidget {
 
   /// The value of [selectedItemColor].
   ///
-  /// This getter only exists for backwards compatibility, the
-  /// [selectedItemColor] property is preferred.
+  /// This alias is retained for backward compatibility. Prefer
+  /// [selectedItemColor].
   Color? get fixedColor => selectedItemColor;
 
-  /// The color of the [BottomNavigationBar] itself.
+  /// The color of the [OneUIBottomNavigationBar] itself.
+  ///
+  /// If null, [BottomNavigationBarThemeData.backgroundColor] is used, falling
+  /// back to [ThemeData.canvasColor].
   final Color? backgroundColor;
 
   /// The color of the selected [OneUIBottomNavigationBarItem.label].
   ///
-  /// If null then the [ThemeData.primaryColor] is used.
+  /// If null, [BottomNavigationBarThemeData.selectedItemColor] is used, falling
+  /// back to [TextTheme.bodyLarge]'s color.
   final Color? selectedItemColor;
 
-  /// The color of the unselected [OneUIBottomNavigationBarItem.label]s.
+  /// The color of unselected item labels.
   ///
-  /// If null then the [ThemeData.unselectedWidgetColor]'s color is used.
+  /// If null, [BottomNavigationBarThemeData.unselectedItemColor] is used,
+  /// falling back to [ThemeData.unselectedWidgetColor].
   final Color? unselectedItemColor;
 
   /// The [TextStyle] of the [OneUIBottomNavigationBarItem] labels when they are
   /// selected.
+  ///
+  /// If null, [BottomNavigationBarThemeData.selectedLabelStyle] is used.
   final TextStyle? selectedLabelStyle;
 
   /// The [TextStyle] of the [OneUIBottomNavigationBarItem] labels when they are not
   /// selected.
+  ///
+  /// If null, [BottomNavigationBarThemeData.unselectedLabelStyle] is used.
   final TextStyle? unselectedLabelStyle;
 
-  /// The font size of the [OneUIBottomNavigationBarItem] labels.
+  /// The fallback font size of the [OneUIBottomNavigationBarItem] labels.
   ///
-  /// Defaults to `14.0`.
+  /// This value is used only when the effective label style has no font size.
+  /// Defaults to `14.0` and must be non-negative.
   final double fontSize;
 
   /// The cursor for a mouse pointer when it enters or is hovering over the
@@ -79,10 +88,13 @@ class OneUIBottomNavigationBar extends StatefulWidget {
   final MouseCursor? mouseCursor;
 
   /// Whether detected gestures should provide acoustic and/or haptic feedback.
+  ///
+  /// If null, [BottomNavigationBarThemeData.enableFeedback] is used, falling
+  /// back to true.
   final bool? enableFeedback;
 
   @override
-  _OneUIBottomNavigationBarState createState() =>
+  State<OneUIBottomNavigationBar> createState() =>
       _OneUIBottomNavigationBarState();
 }
 
@@ -154,14 +166,13 @@ class _OneUIBottomNavigationTile extends StatelessWidget {
 
 class _Label extends StatelessWidget {
   const _Label({
-    Key? key,
     required this.selected,
     required this.colorTween,
     required this.animation,
     required this.item,
     required this.selectedLabelStyle,
     required this.unselectedLabelStyle,
-  }) : super(key: key);
+  });
 
   final bool selected;
   final ColorTween colorTween;
@@ -172,7 +183,6 @@ class _Label extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final MediaQueryData mediaQueryData = MediaQuery.of(context);
     final double? selectedFontSize = selectedLabelStyle.fontSize;
     final double? unselectedFontSize = unselectedLabelStyle.fontSize;
 
@@ -182,10 +192,8 @@ class _Label extends StatelessWidget {
       animation.value,
     )!;
 
-    return MediaQuery(
-      data: mediaQueryData.copyWith(
-        textScaleFactor: math.min(1.0, mediaQueryData.textScaleFactor),
-      ),
+    return MediaQuery.withClampedTextScaling(
+      maxScaleFactor: 1.0,
       child: Align(
         alignment: Alignment.center,
         // heightFactor: 1.0,
@@ -216,6 +224,8 @@ class _Label extends StatelessWidget {
                 ),
               ),
               alignment: Alignment.bottomCenter,
+              // Keep rendering the legacy public title for source compatibility.
+              // ignore: deprecated_member_use_from_same_package
               child: item.title ?? Text(item.label!),
             ),
           ),
@@ -242,10 +252,9 @@ class _OneUIBottomNavigationBarState extends State<OneUIBottomNavigationBar>
 
     _controllers = List<AnimationController>.generate(
       widget.items.length,
-      (int index) => AnimationController(
-        duration: kThemeAnimationDuration,
-        vsync: this,
-      )..addListener(_rebuild),
+      (int index) =>
+          AnimationController(duration: kThemeAnimationDuration, vsync: this)
+            ..addListener(_rebuild),
     );
     _animations = List<CurvedAnimation>.generate(
       widget.items.length,
@@ -309,8 +318,9 @@ class _OneUIBottomNavigationBarState extends State<OneUIBottomNavigationBar>
   }
 
   List<Widget> _createTiles() {
-    final MaterialLocalizations localizations =
-        MaterialLocalizations.of(context);
+    final MaterialLocalizations localizations = MaterialLocalizations.of(
+      context,
+    );
 
     final ThemeData themeData = Theme.of(context);
     final BottomNavigationBarThemeData bottomTheme =
@@ -326,36 +336,42 @@ class _OneUIBottomNavigationBarState extends State<OneUIBottomNavigationBar>
     );
     final ColorTween colorTween;
     colorTween = ColorTween(
-      begin: widget.unselectedItemColor ??
+      begin:
+          widget.unselectedItemColor ??
           bottomTheme.unselectedItemColor ??
           themeData.unselectedWidgetColor,
-      end: widget.selectedItemColor ??
+      end:
+          widget.selectedItemColor ??
           bottomTheme.selectedItemColor ??
           widget.fixedColor ??
-          themeData.textTheme.bodyText1?.color,
+          themeData.textTheme.bodyLarge?.color,
     );
     final MouseCursor effectiveMouseCursor =
         widget.mouseCursor ?? SystemMouseCursors.click;
 
     final List<Widget> tiles = <Widget>[];
     for (int i = 0; i < widget.items.length; i++) {
-      tiles.add(_OneUIBottomNavigationTile(
-        item: widget.items[i],
-        animation: _animations[i],
-        selectedLabelStyle: effectiveSelectedLabelStyle,
-        unselectedLabelStyle: effectiveUnselectedLabelStyle,
-        enableFeedback:
-            widget.enableFeedback ?? bottomTheme.enableFeedback ?? true,
-        onTap: () {
-          if (widget.onTap != null) widget.onTap!(i);
-        },
-        colorTween: colorTween,
-        flex: _evaluateFlex(_animations[i]),
-        selected: i == widget.currentIndex,
-        indexLabel: localizations.tabLabel(
-            tabIndex: i + 1, tabCount: widget.items.length),
-        mouseCursor: effectiveMouseCursor,
-      ));
+      tiles.add(
+        _OneUIBottomNavigationTile(
+          item: widget.items[i],
+          animation: _animations[i],
+          selectedLabelStyle: effectiveSelectedLabelStyle,
+          unselectedLabelStyle: effectiveUnselectedLabelStyle,
+          enableFeedback:
+              widget.enableFeedback ?? bottomTheme.enableFeedback ?? true,
+          onTap: () {
+            if (widget.onTap != null) widget.onTap!(i);
+          },
+          colorTween: colorTween,
+          flex: _evaluateFlex(_animations[i]),
+          selected: i == widget.currentIndex,
+          indexLabel: localizations.tabLabel(
+            tabIndex: i + 1,
+            tabCount: widget.items.length,
+          ),
+          mouseCursor: effectiveMouseCursor,
+        ),
+      );
     }
     return tiles;
   }
@@ -377,23 +393,24 @@ class _OneUIBottomNavigationBarState extends State<OneUIBottomNavigationBar>
   Widget build(BuildContext context) {
     assert(debugCheckHasDirectionality(context));
     assert(debugCheckHasMediaQuery(context));
-    assert(Overlay.of(context, debugRequiredFor: widget) != null);
+    assert(debugCheckHasOverlay(context));
 
     final BottomNavigationBarThemeData bottomTheme =
         BottomNavigationBarTheme.of(context);
-    final double additionalBottomPadding =
-        MediaQuery.of(context).padding.bottom;
-    Color? backgroundColor =
+    final double additionalBottomPadding = MediaQuery.of(
+      context,
+    ).padding.bottom;
+    final Color? backgroundColor =
         widget.backgroundColor ?? bottomTheme.backgroundColor;
 
     return Semantics(
       explicitChildNodes: true,
       child: ConstrainedBox(
         constraints: BoxConstraints(
-            minHeight: kBottomNavigationBarHeight + additionalBottomPadding),
+          minHeight: kBottomNavigationBarHeight + additionalBottomPadding,
+        ),
         child: Material(
           color: backgroundColor,
-          type: MaterialType.transparency,
           child: Padding(
             padding: EdgeInsets.only(bottom: additionalBottomPadding),
             child: MediaQuery.removePadding(

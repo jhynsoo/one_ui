@@ -4,12 +4,15 @@ import 'package:flutter/material.dart';
 
 const Duration _kUnconfirmedSplashDuration = kThemeAnimationDuration;
 const Duration _kSplashFadeDuration = kRadialReactionDuration;
-const Duration _kReverseSplashFadeDuration = const Duration(milliseconds: 350);
+const Duration _kReverseSplashFadeDuration = Duration(milliseconds: 350);
 
 const double _kSplashConfirmedVelocity = 1.0; // logical pixels per millisecond
 
 RectCallback? _getClipCallback(
-    RenderBox referenceBox, bool containedInkWell, RectCallback? rectCallback) {
+  RenderBox referenceBox,
+  bool containedInkWell,
+  RectCallback? rectCallback,
+) {
   if (rectCallback != null) {
     assert(containedInkWell);
     return rectCallback;
@@ -58,7 +61,7 @@ class _OneUIBottomNavigationBarSplashFactory
 class OneUIBottomNavigationBarSplash extends InteractiveInkFeature {
   OneUIBottomNavigationBarSplash({
     required MaterialInkController controller,
-    required RenderBox referenceBox,
+    required super.referenceBox,
     required TextDirection textDirection,
     Offset? position,
     required Color color,
@@ -66,36 +69,36 @@ class OneUIBottomNavigationBarSplash extends InteractiveInkFeature {
     RectCallback? rectCallback,
     ShapeBorder? customBorder,
     double? radius,
-    VoidCallback? onRemoved,
-  })  : _borderRadius = BorderRadius.circular(18.0),
-        _customBorder = customBorder,
-        _targetSize = _getTargetSize(referenceBox, rectCallback),
-        _clipCallback =
-            _getClipCallback(referenceBox, containedInkWell, rectCallback),
-        _textDirection = textDirection,
-        super(
-            controller: controller,
-            referenceBox: referenceBox,
-            color: color,
-            onRemoved: onRemoved) {
-    _scaleController = AnimationController(
-      duration: _kUnconfirmedSplashDuration,
-      vsync: controller.vsync,
-    )
-      ..addListener(controller.markNeedsPaint)
-      ..forward();
+    super.onRemoved,
+  }) : _borderRadius = BorderRadius.circular(18.0),
+       _customBorder = customBorder,
+       _targetSize = _getTargetSize(referenceBox, rectCallback),
+       _clipCallback = _getClipCallback(
+         referenceBox,
+         containedInkWell,
+         rectCallback,
+       ),
+       _textDirection = textDirection,
+       super(controller: controller, color: color) {
+    _scaleController =
+        AnimationController(
+            duration: _kUnconfirmedSplashDuration,
+            vsync: controller.vsync,
+          )
+          ..addListener(controller.markNeedsPaint)
+          ..forward();
     _scale = _scaleController.drive(Tween<double>(begin: .9, end: 1.0));
-    _alphaController = AnimationController(
-      duration: _kSplashFadeDuration,
-      reverseDuration: _kReverseSplashFadeDuration,
-      vsync: controller.vsync,
-    )
-      ..addListener(controller.markNeedsPaint)
-      ..forward();
-    _alpha = _alphaController.drive(IntTween(
-      begin: 0,
-      end: color.alpha,
-    ));
+    _alphaController =
+        AnimationController(
+            duration: _kSplashFadeDuration,
+            reverseDuration: _kReverseSplashFadeDuration,
+            vsync: controller.vsync,
+          )
+          ..addListener(controller.markNeedsPaint)
+          ..forward();
+    _alpha = _alphaController.drive(
+      IntTween(begin: 0, end: (color.a * 255.0).round().clamp(0, 255)),
+    );
 
     controller.addInkFeature(this);
   }
@@ -111,15 +114,16 @@ class OneUIBottomNavigationBarSplash extends InteractiveInkFeature {
   late AnimationController _alphaController;
 
   /// Used to specify this type of ink splash for an [InkWell], [InkResponse],
-  /// material [Theme], or [ButtonStyle].
+  /// a Material [Theme], or [ButtonStyle].
   static const InteractiveInkFeatureFactory splashFactory =
       _OneUIBottomNavigationBarSplashFactory();
 
   @override
   void confirm() {
-    final int duration = (math.max(_targetSize.width, _targetSize.height) /
-            _kSplashConfirmedVelocity)
-        .floor();
+    final int duration =
+        (math.max(_targetSize.width, _targetSize.height) /
+                _kSplashConfirmedVelocity)
+            .floor();
     _scaleController
       ..duration = Duration(milliseconds: duration)
       ..forward();
@@ -182,24 +186,32 @@ void paintInkRRect({
     final Rect rect = clipCallback();
     if (customBorder != null) {
       canvas.clipPath(
-          customBorder.getOuterPath(rect, textDirection: textDirection));
+        customBorder.getOuterPath(rect, textDirection: textDirection),
+      );
     } else if (borderRadius != BorderRadius.zero) {
-      canvas.clipRRect(RRect.fromRectAndCorners(
-        rect,
-        topLeft: borderRadius.topLeft,
-        topRight: borderRadius.topRight,
-        bottomLeft: borderRadius.bottomLeft,
-        bottomRight: borderRadius.bottomRight,
-      ));
+      canvas.clipRRect(
+        RRect.fromRectAndCorners(
+          rect,
+          topLeft: borderRadius.topLeft,
+          topRight: borderRadius.topRight,
+          bottomLeft: borderRadius.bottomLeft,
+          bottomRight: borderRadius.bottomRight,
+        ),
+      );
     } else {
       canvas.clipRect(rect);
     }
   }
 
   final Rect inkRect = Rect.fromCenter(
-      center: center, width: size.width * scale, height: size.height * scale);
-  final RRect inkRRect =
-      RRect.fromRectAndRadius(inkRect, const Radius.circular(18.0));
+    center: center,
+    width: size.width * scale,
+    height: size.height * scale,
+  );
+  final RRect inkRRect = RRect.fromRectAndRadius(
+    inkRect,
+    const Radius.circular(18.0),
+  );
   canvas.drawRRect(inkRRect, paint);
   canvas.restore();
 }

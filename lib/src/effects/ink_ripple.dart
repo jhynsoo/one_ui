@@ -69,7 +69,12 @@ class _OneUIInkRippleFactory extends InteractiveInkFeatureFactory {
   }
 }
 
+/// A One UI-style ink ripple that expands from the input position.
+///
+/// This class is rarely created directly. Use [splashFactory] with an
+/// [InkResponse], [InkWell], a Material [Theme], or [ButtonStyle].
 class OneUIInkRipple extends InteractiveInkFeature {
+  /// Begins a ripple at [position] relative to [referenceBox].
   OneUIInkRipple({
     required MaterialInkController controller,
     required super.referenceBox,
@@ -162,7 +167,7 @@ class OneUIInkRipple extends InteractiveInkFeature {
   late AnimationController _fadeOutController;
 
   /// Used to specify this type of ink splash for an [InkWell], [InkResponse],
-  /// material [Theme], or [ButtonStyle].
+  /// a Material [Theme], or [ButtonStyle].
   static const InteractiveInkFeatureFactory splashFactory =
       _OneUIInkRippleFactory();
 

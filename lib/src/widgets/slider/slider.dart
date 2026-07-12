@@ -44,8 +44,8 @@ class OneUISlider extends StatefulWidget {
   /// The slider's thumb is drawn at a position that corresponds to this value.
   final double value;
 
-  /// Called during a drag when the user is selecting a new value for the slider
-  /// by dragging.
+  /// Called when the user selects a new slider value by tapping, dragging, or
+  /// using the keyboard.
   ///
   /// The slider passes the new value to the callback but does not actually
   /// change state until the parent widget rebuilds the slider with the new
@@ -53,12 +53,19 @@ class OneUISlider extends StatefulWidget {
   ///
   /// If null, the slider will be displayed as disabled.
   ///
-  /// The callback provided to onChanged should update the state of the parent
+  /// The callback provided to [onChanged] should update the state of the parent
   /// [StatefulWidget] using the [State.setState] method, so that the parent
   /// gets rebuilt.
   final ValueChanged<double>? onChanged;
 
+  /// The radius of the slider thumb when it is idle.
+  ///
+  /// Defaults to 10.0 logical pixels.
   final double thumbRadius;
+
+  /// The radius of the slider thumb while it is being pressed or dragged.
+  ///
+  /// Defaults to 13.0 logical pixels.
   final double onClickThumbRadius;
 
   /// Called when the user starts selecting a new value for the slider.
@@ -68,14 +75,14 @@ class OneUISlider extends StatefulWidget {
   /// selecting a new value by starting a drag or with a tap.
   ///
   /// The value passed will be the last [value] that the slider had before the
-  /// change began
+  /// change began.
   final ValueChanged<double>? onChangeStart;
 
   /// Called when the user is done selecting a new value for the slider.
   ///
   /// This callback shouldn't be used to update the slider [value] (use
   /// [onChanged] for that), but rather to know when the user has completed
-  /// selecting a new [value] by ending a drag or a click.
+  /// selecting a new [value] by ending a drag or a tap.
   final ValueChanged<double>? onChangeEnd;
 
   /// The minimum value the user can select.
@@ -118,7 +125,8 @@ class OneUISlider extends StatefulWidget {
   /// minimum value.
   ///
   /// Defaults to [SliderThemeData.activeTrackColor] of the current
-  /// [SliderTheme].
+  /// [SliderTheme], then the semantic One UI primary color. When provided, this
+  /// value also overrides the thumb and inactive tick mark colors.
   ///
   /// Using a [SliderTheme] gives much more fine-grained control over the
   /// appearance of various components of the slider.
@@ -129,8 +137,9 @@ class OneUISlider extends StatefulWidget {
   /// The "inactive" side of the slider is the side between the thumb and the
   /// maximum value.
   ///
-  /// Defaults to the [SliderThemeData.inactiveTrackColor] of the current
-  /// [SliderTheme].
+  /// Defaults to [SliderThemeData.inactiveTrackColor] of the current
+  /// [SliderTheme], then the semantic One UI primary color at 24% opacity. When
+  /// provided, this value also overrides the active tick mark color.
   ///
   /// Using a [SliderTheme] gives much more fine-grained control over the
   /// appearance of various components of the slider.
@@ -156,8 +165,6 @@ class OneUISlider extends StatefulWidget {
   /// This is used by accessibility frameworks like TalkBack on Android to
   /// inform users what the currently selected value is with more context.
   ///
-  /// In the example below, a slider for currency values is configured to
-  /// announce a value with a currency label.
   final SemanticFormatterCallback? semanticFormatterCallback;
 
   /// {@macro flutter.widgets.Focus.focusNode}

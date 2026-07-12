@@ -23,7 +23,7 @@ class OneUIScrollSimulation extends Simulation {
   /// simulation.
   final double velocity;
 
-  /// The expanded height of [OneUiScrollView].
+  /// The expanded height of the collapsible app bar.
   final double expandedHeight;
 
   /// The amount of friction the particle experiences as it travels.

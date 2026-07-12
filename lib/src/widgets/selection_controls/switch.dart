@@ -15,7 +15,7 @@ const double _kSwitchHeight = _kSwitchMinSize + 8.0;
 const double _kSwitchHeightCollapsed = _kSwitchMinSize;
 
 class OneUISwitch extends StatefulWidget {
-  /// Creates a OneUI design switch.
+  /// Creates a One UI-style switch.
   ///
   /// The switch itself does not maintain any state. Instead, when the state of
   /// the switch changes, the widget calls the [onChanged] callback. Most widgets
@@ -58,7 +58,6 @@ class OneUISwitch extends StatefulWidget {
 
   /// Whether this switch is on or off.
   ///
-  /// This property must not be null.
   final bool value;
 
   /// Called when the user toggles the switch on or off.
@@ -90,9 +89,11 @@ class OneUISwitch extends StatefulWidget {
   /// state, it will be used instead of this color.
   final Color? activeColor;
 
-  /// The color to use on the thumb when this switch is off.
+  /// The color to use on the thumb when this switch is disabled.
   ///
-  /// Defaults to `Color(0xff828282)` if `Theme.of(context).brightness == Brightness.dark`, otherwise `Color(0xfffafafa)`.
+  /// Used when [thumbColor] is null. If this is also null,
+  /// [SwitchThemeData.thumbColor] is used before falling back to
+  /// `Color(0xff828282)` in a dark theme or `Color(0xfffafafa)` in a light theme.
   final Color? disabledThumbColor;
 
   /// An image to use on the thumb of this switch when the switch is on.
@@ -109,25 +110,14 @@ class OneUISwitch extends StatefulWidget {
   /// [inactiveThumbImage].
   final ImageErrorListener? onInactiveThumbImageError;
 
-  /// The color of this [Switch]'s thumb.
+  /// The color of this [OneUISwitch]'s thumb in every state.
   ///
-  /// Resolved in the following states:
-  ///  * [WidgetState.selected].
-  ///  * [WidgetState.hovered].
-  ///  * [WidgetState.focused].
-  ///  * [WidgetState.disabled].
-  ///
-  /// If null, then the value of [SwitchThemeData.thumbColor] is used. If that
-  /// is also null, then the following colors are used:
-  ///
-  /// | State    | Light theme                       | Dark theme                        |
-  /// |----------|-----------------------------------|-----------------------------------|
-  /// | Default  | `Colors.white`                    | `Colors.white`                    |
-  /// | Selected | `Colors.white`                    | `Colors.white`                    |
-  /// | Disabled | `Color(0xfffafafa)`               | `Color(0xff828282)`               |
+  /// If null, a disabled switch uses [disabledThumbColor], then
+  /// [SwitchThemeData.thumbColor], then the built-in light or dark default. An
+  /// enabled switch uses the theme thumb color, falling back to [Colors.white].
   final Color? thumbColor;
 
-  /// The color of this [Switch]'s track.
+  /// The state-dependent color of this [OneUISwitch]'s track.
   ///
   /// Resolved in the following states:
   ///  * [WidgetState.selected].
@@ -135,19 +125,20 @@ class OneUISwitch extends StatefulWidget {
   ///  * [WidgetState.focused].
   ///  * [WidgetState.disabled].
   ///
-  /// If null, then the value of [activeTrackColor] is used in the selected
-  /// state and [inactiveTrackColor] in the default state. If that is also null,
-  /// then the value of [SwitchThemeData.trackColor] is used. If that is also
-  /// null, then the following colors are used:
+  /// A color resolved from this property takes precedence over every fallback.
+  /// Otherwise, the following colors are used:
   ///
-  /// | State    | Light theme            | Dark theme             |
-  /// |----------|------------------------|------------------------|
-  /// | Default  | `Colors.grey.shade50`  | `Colors.grey.shade400` |
-  /// | Selected | [activeColor]          | [activeColor]          |
-  /// | Disabled | `Color(0x52000000)`    | `Colors.white30`       |
+  /// * Selected and enabled: [activeColor], then
+  ///   [SwitchThemeData.trackColor], then the active semantic One UI color.
+  /// * Unselected and enabled: [SwitchThemeData.trackColor], then
+  ///   [Colors.transparent].
+  /// * Selected and disabled: [SwitchThemeData.trackColor], then
+  ///   [Colors.black12] in a light theme or [Colors.white10] in a dark theme.
+  /// * Unselected and disabled: [SwitchThemeData.trackColor], then
+  ///   [Colors.transparent].
   final WidgetStateProperty<Color?>? trackColor;
 
-  /// The color of this [Switch]'s thumb border.
+  /// The state-dependent color of this [OneUISwitch]'s thumb border.
   ///
   /// Resolved in the following states:
   ///  * [WidgetState.selected].
@@ -155,16 +146,14 @@ class OneUISwitch extends StatefulWidget {
   ///  * [WidgetState.focused].
   ///  * [WidgetState.disabled].
   ///
-  /// null, then the following colors are used:
-  ///
-  /// | State    | Light theme         | Dark theme       |
-  /// |----------|---------------------|------------------|
-  /// | Default  | `Color(0x52000000)` | `Colors.white30` |
-  /// | Selected | `[activeColor]`     | `[activeColor]`  |
-  /// | Disabled | `Colors.black12`    | `Colors.white10` |
+  /// If null, a selected and enabled switch uses [activeColor] or the semantic
+  /// One UI active color. An unselected and enabled switch uses
+  /// `Color(0x52000000)` in a light theme or [Colors.white30] in a dark theme.
+  /// A disabled switch uses [Colors.black12] in a light theme or
+  /// [Colors.white10] in a dark theme.
   final WidgetStateProperty<Color?>? thumbBorderColor;
 
-  /// The color of this [Switch]'s track border.
+  /// The state-dependent color of this [OneUISwitch]'s track border.
   ///
   /// Resolved in the following states:
   ///  * [WidgetState.selected].
@@ -172,13 +161,11 @@ class OneUISwitch extends StatefulWidget {
   ///  * [WidgetState.focused].
   ///  * [WidgetState.disabled].
   ///
-  /// null, then the following colors are used:
-  ///
-  /// | State    | Light theme          | Dark theme           |
-  /// |----------|----------------------|----------------------|
-  /// | Default  | `Color(0x52000000)`  | `Colors.white30`     |
-  /// | Selected | `Colors.transparent` | `Colors.transparent` |
-  /// | Disabled | `Colors.black12`     | `Colors.white10`     |
+  /// If null, selected switches use [Colors.transparent], including when
+  /// disabled. An enabled, unselected switch uses `Color(0x52000000)` in a
+  /// light theme or [Colors.white30] in a dark theme. A disabled, unselected
+  /// switch uses [Colors.black12] in a light theme or [Colors.white10] in a
+  /// dark theme.
   final WidgetStateProperty<Color?>? trackBorderColor;
 
   /// Configures the minimum size of the tap target.
@@ -206,7 +193,7 @@ class OneUISwitch extends StatefulWidget {
   /// is also null, then [WidgetStateMouseCursor.clickable] is used.
   final MouseCursor? mouseCursor;
 
-  /// The color for the button's [Material] when it has the input focus.
+  /// The color of the switch's ink response when it has input focus.
   ///
   /// If [overlayColor] returns a non-null color in the [WidgetState.focused]
   /// state, it will be used instead.
@@ -216,7 +203,7 @@ class OneUISwitch extends StatefulWidget {
   /// [ThemeData.focusColor] is used.
   final Color? focusColor;
 
-  /// The color for the button's [Material] when a pointer is hovering over it.
+  /// The color of the switch's ink response when a pointer is hovering over it.
   ///
   /// If [overlayColor] returns a non-null color in the [WidgetState.hovered]
   /// state, it will be used instead.
@@ -226,7 +213,7 @@ class OneUISwitch extends StatefulWidget {
   /// [ThemeData.hoverColor] is used.
   final Color? hoverColor;
 
-  /// The color for the switch's [Material].
+  /// The state-dependent color of the switch's ink response.
   ///
   /// Resolves in the following states:
   ///  * [WidgetState.pressed].
@@ -234,13 +221,11 @@ class OneUISwitch extends StatefulWidget {
   ///  * [WidgetState.hovered].
   ///  * [WidgetState.focused].
   ///
-  /// If null, then the value of [activeColor] with alpha
-  /// [kRadialReactionAlpha], [focusColor] and [hoverColor] is used in the
-  /// pressed, focused and hovered state. If that is also null,
-  /// the value of [SwitchThemeData.overlayColor] is used. If that is
-  /// also null, then the resolved active color with alpha
-  /// [kRadialReactionAlpha], [ThemeData.focusColor] and [ThemeData.hoverColor]
-  /// is used in the pressed, focused and hovered state.
+  /// For pressed states, the fallback order is
+  /// [SwitchThemeData.overlayColor] followed by the resolved track color with
+  /// [kRadialReactionAlpha]. Focused and hovered states use [focusColor] or
+  /// [hoverColor], then [SwitchThemeData.overlayColor], then the corresponding
+  /// [ThemeData.focusColor] or [ThemeData.hoverColor].
   final WidgetStateProperty<Color?>? overlayColor;
 
   /// The splash radius of the circular [Material] ink response.
@@ -278,7 +263,7 @@ class _OneUISwitchState extends State<OneUISwitch>
   void didUpdateWidget(OneUISwitch oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.value != widget.value) {
-      // During a drag we may have modified the curve, reset it if its possible
+      // During a drag we may have modified the curve. Reset it when possible
       // to do without visual discontinuation.
       if (position.value == 0.0 || position.value == 1.0) {
         position
@@ -434,7 +419,7 @@ class _OneUISwitchState extends State<OneUISwitch>
 
     final ThemeData theme = Theme.of(context);
 
-    // Colors need to be resolved in selected and non selected states separately
+    // Resolve colors separately for selected and unselected states
     // so that they can be lerped between.
     final Set<WidgetState> activeStates = states..add(WidgetState.selected);
     final Set<WidgetState> inactiveStates = states

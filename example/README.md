@@ -1,6 +1,8 @@
 # one_ui_example
 
-A Flutter application showcasing every public `one_ui` widget.
+A Flutter app that demonstrates every public `one_ui` widget and ink effect.
+
+Run all commands below from the `example` directory.
 
 ## Run the catalog
 
@@ -14,9 +16,13 @@ navigation, buttons, dialogs, popup menus, switches, sliders, and ink effects.
 Each interaction displays an observable status so it can be checked manually
 and by the integration test.
 
+The color controls switch between light and dark themes and between the built-in
+One UI palette and Material You. Material You uses the device's dynamic colors
+when available, with a configurable seeded `ColorScheme` fallback.
+
 ## Test the catalog
 
-Run the widget tests normally:
+To run the widget tests:
 
 ```shell
 flutter test

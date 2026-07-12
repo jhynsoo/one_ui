@@ -114,7 +114,7 @@ class OneUIBottomNavigationBarSplash extends InteractiveInkFeature {
   late AnimationController _alphaController;
 
   /// Used to specify this type of ink splash for an [InkWell], [InkResponse],
-  /// material [Theme], or [ButtonStyle].
+  /// a Material [Theme], or [ButtonStyle].
   static const InteractiveInkFeatureFactory splashFactory =
       _OneUIBottomNavigationBarSplashFactory();
 

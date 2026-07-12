@@ -122,7 +122,7 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   final Widget? title;
 
   /// {@template oneui.appbar.actions}
-  /// A list of Widgets to display in a row after the [title] widget.
+  /// A list of widgets to display in a row after the [title] widget.
   ///
   /// Typically these widgets are [OneUIIconButton]s representing common operations.
   /// For less common operations, consider using a [OneUIPopupMenuButton] as the
@@ -352,7 +352,7 @@ class OneUIAppBar extends StatefulWidget implements PreferredSizeWidget {
   final TextStyle? toolbarTextStyle;
 
   /// {@template oneui.appbar.titleTextStyle}
-  /// The default text style for the AppBar's [title] widget.
+  /// The default text style for the [title] widget in this app bar.
   ///
   /// If this property is null, then [AppBarTheme.titleTextStyle] of
   /// [ThemeData.appBarTheme] is used. If that is also null, the default

@@ -113,16 +113,17 @@ class OneUIDialog extends StatelessWidget {
   ///
   /// This sets the [Material.color] on this [OneUIDialog]'s [Material].
   ///
-  /// If `null`, [DialogThemeData.backgroundColor] is used. If that is also
-  /// null, [ColorScheme.surface] is used.
+  /// If null and [useOneUITheme] is true, the default One UI light or dark
+  /// surface color is used. Otherwise, [DialogThemeData.backgroundColor] is
+  /// used, falling back to [ColorScheme.surface].
   /// {@endtemplate}
   final Color? backgroundColor;
 
   /// {@template oneui.dialog.elevation}
   /// The z-coordinate of this [OneUIDialog].
   ///
-  /// If null then [DialogThemeData.elevation] is used, and if that's null then
-  /// the dialog's elevation is 2.0.
+  /// If null, [DialogThemeData.elevation] is used. If that is also null, the
+  /// elevation defaults to 2.0.
   /// {@endtemplate}
   /// {@macro flutter.material.material.elevation}
   final double? elevation;
@@ -159,7 +160,7 @@ class OneUIDialog extends StatelessWidget {
   /// See the enum [Clip] for details of all possible options and their common
   /// use cases.
   ///
-  /// Defaults to [Clip.none], and must not be null.
+  /// Defaults to [Clip.none].
   /// {@endtemplate}
   final Clip clipBehavior;
 
@@ -168,12 +169,15 @@ class OneUIDialog extends StatelessWidget {
   ///
   /// Defines the dialog's [Material.shape].
   ///
-  /// The default shape is a [RoundedRectangleBorder] with a radius of 4.0
+  /// The default shape is a [RoundedRectangleBorder] with a radius of 24.0.
   /// {@endtemplate}
   final ShapeBorder? shape;
 
   /// {@template oneui.dialog.useOneUITheme}
-  /// If true, ignore [shape] and use OneUI default style dialog.
+  /// Whether to use the default One UI surface color and shape when explicit
+  /// values are not provided.
+  ///
+  /// Defaults to true.
   /// {@endtemplate}
   final bool useOneUITheme;
 
@@ -222,18 +226,21 @@ class OneUIDialog extends StatelessWidget {
           child: ConstrainedBox(
             constraints: dialogConstraints,
             child: Material(
-              color: useOneUITheme
-                  ? isDark
-                        ? const Color(0xff252525)
-                        : const Color(0xfffcfcfc)
-                  : backgroundColor ??
-                        dialogTheme.backgroundColor ??
-                        Theme.of(context).colorScheme.surface,
+              color:
+                  backgroundColor ??
+                  (useOneUITheme
+                      ? isDark
+                            ? const Color(0xff252525)
+                            : const Color(0xfffcfcfc)
+                      : dialogTheme.backgroundColor ??
+                            Theme.of(context).colorScheme.surface),
               elevation:
                   elevation ?? dialogTheme.elevation ?? _defaultElevation,
-              shape: useOneUITheme
-                  ? _defaultDialogShape
-                  : shape ?? dialogTheme.shape ?? _defaultDialogShape,
+              shape:
+                  shape ??
+                  (useOneUITheme
+                      ? _defaultDialogShape
+                      : dialogTheme.shape ?? _defaultDialogShape),
               type: MaterialType.card,
               clipBehavior: clipBehavior,
               child: child,
@@ -318,10 +325,7 @@ class OneUIAlertDialog extends StatelessWidget {
   /// The (optional) set of actions that are displayed at the bottom of the
   /// dialog.
   ///
-  /// Typically this is a list of [TextButton] widgets. It is recommended to
-  /// set the [Text.textAlign] to [TextAlign.end] for the [Text] within the
-  /// [TextButton], so that buttons whose labels wrap to an extra line align
-  /// with the overall [OverflowBar]'s alignment within the dialog.
+  /// Each [OneUIDialogAction] is rendered as a [OneUIFlatButton].
   ///
   /// These widgets will be wrapped in an [OverflowBar].
   ///
@@ -335,8 +339,8 @@ class OneUIAlertDialog extends StatelessWidget {
   /// Typically used to provide padding to the button bar between the button bar
   /// and the edges of the dialog.
   ///
-  /// If are no [actions], then no padding will be included. The padding around
-  /// the button bar defaults to zero. It is also important to note that
+  /// If there are no [actions], no padding is included. The padding defaults to
+  /// 24 pixels on the left and right and 16 pixels on the bottom. Note that
   /// [buttonPadding] may contribute to the padding on the edges of [actions] as
   /// well.
   final EdgeInsetsGeometry actionsPadding;
@@ -352,7 +356,6 @@ class OneUIAlertDialog extends StatelessWidget {
   /// property is set to [VerticalDirection.up], since it "starts" at the
   /// bottom and "ends" at the top.
   ///
-  /// If null then it will use the surrounding
   /// If null, it defaults to [VerticalDirection.down].
   final VerticalDirection? actionsOverflowDirection;
 
@@ -364,11 +367,10 @@ class OneUIAlertDialog extends StatelessWidget {
   ///
   /// Note that the button spacing may appear to be more than
   /// the value provided. This is because most buttons adhere to the
-  /// [MaterialTapTargetSize] of 48px. So, even though a button
-  /// might visually be 36px in height, it might still take up to
-  /// 48px vertically.
+  /// [MaterialTapTargetSize] of 48 logical pixels. Therefore, even when a button
+  /// is visually 36 logical pixels high, it can occupy 48 logical pixels.
   ///
-  /// If null then no spacing will be added in between buttons in
+  /// If null, no spacing is added between buttons in
   /// an overflow state.
   final double? actionsOverflowButtonSpacing;
 
@@ -377,8 +379,7 @@ class OneUIAlertDialog extends StatelessWidget {
   /// This is different from [actionsPadding], which defines the padding
   /// between the entire button bar and the edges of the dialog.
   ///
-  /// If this property is null, then it will default to
-  /// 8.0 logical pixels on the left and right.
+  /// If this property is null, no additional padding is added.
   final EdgeInsetsGeometry? buttonPadding;
 
   /// {@macro flutter.material.dialog.backgroundColor}
@@ -387,11 +388,11 @@ class OneUIAlertDialog extends StatelessWidget {
   /// The semantic label of the dialog used by accessibility frameworks to
   /// announce screen transitions when the dialog is opened and closed.
   ///
-  /// In iOS, if this label is not provided, a semantic label will be inferred
-  /// from the [title] if it is not null.
+  /// On iOS and macOS, [title] supplies the route semantics when this label is
+  /// not provided.
   ///
-  /// In Android, if this label is not provided, the dialog will use the
-  /// [MaterialLocalizations.alertDialogLabel] as its label.
+  /// On other platforms, [MaterialLocalizations.alertDialogLabel] is used when
+  /// this label is not provided.
   final String? semanticLabel;
 
   /// {@macro oneui.dialog.insetPadding}
@@ -445,6 +446,7 @@ class OneUIAlertDialog extends StatelessWidget {
     Widget? contentWidget;
     Widget? actionsWidget;
     List<Widget> actionsChildren = [];
+    final bool hasActions = actions?.isNotEmpty ?? false;
     if (title != null) {
       final EdgeInsets defaultTitlePadding = EdgeInsets.fromLTRB(
         24.0,
@@ -498,7 +500,7 @@ class OneUIAlertDialog extends StatelessWidget {
       );
     }
 
-    if (actions != null) {
+    if (hasActions) {
       for (OneUIDialogAction action in actions!) {
         final Widget actionWidget = Padding(
           padding: buttonPadding ?? EdgeInsets.zero,
@@ -543,13 +545,13 @@ class OneUIAlertDialog extends StatelessWidget {
               ),
             ),
           ),
-        if (actions != null) actionsWidget!,
+        if (hasActions) actionsWidget!,
       ];
     } else {
       columnChildren = <Widget>[
         if (title != null) titleWidget!,
         if (content != null) Flexible(child: contentWidget!),
-        if (actions != null) actionsWidget!,
+        if (hasActions) actionsWidget!,
       ];
     }
 

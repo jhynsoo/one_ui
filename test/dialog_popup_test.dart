@@ -49,6 +49,52 @@ void main() {
       expect(find.text('raw:canceled'), findsOneWidget);
       expectNoFlutterException(tester);
     });
+
+    testWidgets('explicit dialog color and shape override One UI defaults', (
+      WidgetTester tester,
+    ) async {
+      const Color customColor = Color(0xff123456);
+      const ShapeBorder customShape = StadiumBorder();
+
+      await tester.pumpWidget(
+        const TestApp(
+          home: Scaffold(
+            body: one_ui.OneUIDialog(
+              backgroundColor: customColor,
+              shape: customShape,
+              child: Text('Styled dialog'),
+            ),
+          ),
+        ),
+      );
+
+      final Material material = tester.widget<Material>(
+        find.descendant(
+          of: find.byType(one_ui.OneUIDialog),
+          matching: find.byType(Material),
+        ),
+      );
+      expect(material.color, customColor);
+      expect(material.shape, customShape);
+    });
+
+    testWidgets('an empty action list does not build a padded action bar', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        const TestApp(
+          home: Scaffold(
+            body: one_ui.OneUIAlertDialog(
+              title: Text('No actions'),
+              actions: <one_ui.OneUIDialogAction>[],
+            ),
+          ),
+        ),
+      );
+
+      expect(find.byType(OverflowBar), findsNothing);
+      expectNoFlutterException(tester);
+    });
   });
 
   group('One UI popup menus', () {
@@ -79,6 +125,17 @@ void main() {
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(const TestApp(home: _PopupHarness()));
+
+      final one_ui.OneUIIconButton iconTrigger = tester
+          .widget<one_ui.OneUIIconButton>(
+            find.descendant(
+              of: find.byKey(const Key('icon-popup')),
+              matching: find.byType(one_ui.OneUIIconButton),
+            ),
+          );
+      expect(iconTrigger.padding, const EdgeInsets.all(4));
+      expect(iconTrigger.iconSize, 32);
+      expect(iconTrigger.tooltip, 'Open icon menu');
 
       await tester.tap(find.byKey(const Key('disabled-popup')));
       await tester.pump();
@@ -276,6 +333,9 @@ class _PopupHarnessState extends State<_PopupHarness> {
           ),
           one_ui.OneUIPopupMenuButton<String>(
             key: const Key('icon-popup'),
+            tooltip: 'Open icon menu',
+            padding: const EdgeInsets.all(4),
+            iconSize: 32,
             onCanceled: () => setState(() => canceled += 1),
             itemBuilder: (BuildContext context) =>
                 const <one_ui.OneUIPopupMenuItem<String>>[

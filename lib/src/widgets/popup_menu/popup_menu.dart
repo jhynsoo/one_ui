@@ -28,7 +28,6 @@ class OneUIPopupMenuItem<T> extends PopupMenuEntry<T> {
   ///
   /// By default, the item is [enabled].
   ///
-  /// The `enabled` and `height` arguments must not be null.
   const OneUIPopupMenuItem({
     super.key,
     this.value,
@@ -62,7 +61,7 @@ class OneUIPopupMenuItem<T> extends PopupMenuEntry<T> {
   /// If a [height] greater than the height of the sum of the padding and [child]
   /// is provided, then the padding's effect will not be visible.
   ///
-  /// When null, the horizontal padding defaults to 16.0 on both sides.
+  /// When null, the horizontal padding defaults to 26.0 on both sides.
   final EdgeInsets? padding;
 
   /// The text style of the popup menu item.
@@ -90,7 +89,8 @@ class OneUIPopupMenuItem<T> extends PopupMenuEntry<T> {
   /// case, the text should be short enough that it won't wrap.
   final Widget? child;
 
-  /// If true, use [OneUIInkRipple.splashFactory] instead of default splash factory.
+  /// Whether to use [OneUIInkRipple.splashFactory] instead of the ambient
+  /// splash factory.
   final bool useOneUISplashFactory;
 
   @override
@@ -103,8 +103,8 @@ class OneUIPopupMenuItem<T> extends PopupMenuEntry<T> {
 
 /// The [State] for [OneUIPopupMenuItem] subclasses.
 ///
-/// By default this implements the basic styling and layout of Material Design
-/// popup menu items.
+/// By default this implements the basic styling and layout of One UI popup menu
+/// items.
 ///
 /// The [buildChild] method can be overridden to adjust exactly what gets placed
 /// in the menu. By default it returns [OneUIPopupMenuItem.child].
@@ -115,8 +115,8 @@ class OneUIPopupMenuItem<T> extends PopupMenuEntry<T> {
 ///
 /// This class takes two type arguments. The second, `W`, is the exact type of
 /// the [Widget] that is using this [State]. It must be a subclass of
-/// [OneUIPopupMenuItem]. The first, `T`, must match the type argument of that widget
-/// class, and is the type of values returned from this menu.
+/// [OneUIPopupMenuItem]. The first, `T`, must match that widget's type argument
+/// and is the type of values returned from the menu.
 
 class OneUIPopupMenuItemState<T, W extends OneUIPopupMenuItem<T>>
     extends State<W> {
@@ -133,8 +133,8 @@ class OneUIPopupMenuItemState<T, W extends OneUIPopupMenuItem<T>>
   ///
   /// Used by the [InkWell] inserted by the [build] method.
   ///
-  /// By default, uses [Navigator.pop] to return the [PopupMenuItem.value] from
-  /// the menu route.
+  /// By default, uses [Navigator.pop] to return
+  /// [OneUIPopupMenuItem.value] from the menu route.
   @protected
   void handleTap() {
     Navigator.pop<T>(context, widget.value);
@@ -510,9 +510,9 @@ class _PopupMenuRoute<T> extends PopupRoute<T> {
   }
 }
 
-/// Show a popup menu that contains the `items` at `position`.
+/// Shows a popup menu that contains [items] at [position].
 ///
-/// `items` should be non-null and not empty.
+/// The [items] list must not be empty.
 ///
 /// If `initialValue` is specified then the first item with a matching value
 /// will be highlighted and the value of `position` gives the rectangle whose
@@ -540,7 +540,7 @@ class _PopupMenuRoute<T> extends PopupRoute<T> {
 /// in the list.
 ///
 /// The `elevation` argument specifies the z-coordinate at which to place the
-/// menu. The elevation defaults to 8, the appropriate elevation for popup
+/// menu. The elevation defaults to 2, the appropriate elevation for popup
 /// menus.
 ///
 /// The `context` argument is used to look up the [Navigator] and [Theme] for
@@ -608,10 +608,9 @@ typedef OneUIPopupMenuButtonBuilder =
 /// the selected menu item.
 ///
 /// One of [buttonBuilder], [child], or [icon] may be provided. If [icon] is
-/// provided, then [OneUIPopupMenuButton] behaves like an [OneUIIconButton].
+/// provided, then [OneUIPopupMenuButton] behaves like a [OneUIIconButton].
 ///
-/// If all are null, then a standard overflow icon is created (depending on the
-/// platform).
+/// If all are null, a standard vertical overflow icon is created.
 class OneUIPopupMenuButton<T> extends StatefulWidget {
   const OneUIPopupMenuButton({
     super.key,
@@ -669,9 +668,9 @@ class OneUIPopupMenuButton<T> extends StatefulWidget {
   /// Defaults to 2, the appropriate elevation for popup menus.
   final double? elevation;
 
-  /// Matches IconButton's 8 dps padding by default. In some cases, notably where
-  /// this button appears as the trailing element of a list item, it's useful to be able
-  /// to set the padding to zero.
+  /// The padding around an icon trigger.
+  ///
+  /// Defaults to 8 logical pixels on every side.
   final EdgeInsetsGeometry padding;
 
   /// Builds a button that opens the popup menu.
@@ -698,13 +697,13 @@ class OneUIPopupMenuButton<T> extends StatefulWidget {
 
   /// Whether this popup menu button is interactive.
   ///
-  /// Must be non-null, defaults to `true`
+  /// Defaults to true. When true, the button responds to presses by displaying
+  /// the menu.
   ///
-  /// If `true` the button will respond to presses by displaying the menu.
-  ///
-  /// If `false`, the button is styled with the disabled color from the
-  /// current [Theme] and will not respond to presses or show the popup
-  /// menu and [onSelected], [onCanceled] and [itemBuilder] will not be called.
+  /// When false, the icon trigger uses its disabled style, the child trigger
+  /// disables taps, and [buttonBuilder] receives a null callback so it can apply
+  /// its own disabled style. The menu is not shown and [onSelected],
+  /// [onCanceled], and [itemBuilder] are not called.
   ///
   /// This can be useful in situations where the app needs to show the button,
   /// but doesn't currently have anything to show in the menu.
@@ -712,7 +711,7 @@ class OneUIPopupMenuButton<T> extends StatefulWidget {
 
   /// If provided, the border radius used for the menu.
   ///
-  /// The default value is [_kRadius].
+  /// Defaults to a circular radius of 26 logical pixels.
   final BorderRadius? borderRadius;
 
   /// If provided, the background color used for the menu.
@@ -726,11 +725,13 @@ class OneUIPopupMenuButton<T> extends StatefulWidget {
   ///
   /// For example, on Android a tap will produce a clicking sound and a
   /// long-press will produce a short vibration, when feedback is enabled.
+  ///
+  /// If null, [PopupMenuThemeData.enableFeedback] is used, falling back to true.
   final bool? enableFeedback;
 
   /// If provided, the size of the [Icon].
   ///
-  /// If this property is null, the default size is 24.0 pixels.
+  /// If this property is null, the default size is 20.0 logical pixels.
   final double? iconSize;
 
   @override
@@ -825,9 +826,12 @@ class _OneUIPopupMenuButtonState<T> extends State<OneUIPopupMenuButton<T>> {
 
     return OneUIIconButton(
       splashRadius: 16,
-      iconSize: 20,
+      padding: widget.padding,
+      iconSize: widget.iconSize ?? 20,
       onPressed: widget.enabled ? showButtonMenu : null,
       enableFeedback: enableFeedback,
+      tooltip:
+          widget.tooltip ?? MaterialLocalizations.of(context).showMenuTooltip,
       icon: widget.icon ?? const Icon(Icons.more_vert),
     );
   }

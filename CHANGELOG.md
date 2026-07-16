@@ -1,3 +1,18 @@
+## 0.4.1
+
+- Synchronize slider render-object radii and refresh value-indicator text when
+  the slider theme changes.
+- Dispose slider gesture, text, animation, and value-indicator resources when
+  their render objects are removed.
+- Honor switch tap-target overrides and correctly refresh inactive thumb
+  borders and image painters.
+- Expand bottom-navigation hit targets while preserving the compact One UI
+  splash, and add dialog and popup-menu semantic roles.
+- Add widget regression and scroll-physics tests with an enforced coverage
+  floor across the supported Flutter matrix.
+- Add pub.dev screenshots and deploy the example widget catalog to GitHub
+  Pages.
+
 ## 0.4.0
 
 - Require Flutter 3.35 or later and Dart 3.9 or later.

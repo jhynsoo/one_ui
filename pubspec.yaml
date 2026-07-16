@@ -1,9 +1,21 @@
 name: one_ui
 description: Flutter widgets implementing Samsung One UI based on the official design guidelines.
-version: 0.4.0
+version: 0.4.1
 homepage: https://github.com/jhynsoo/one_ui
 repository: https://github.com/jhynsoo/one_ui
 issue_tracker: https://github.com/jhynsoo/one_ui/issues
+
+screenshots:
+  - description: One UI app bar and expandable view in the light theme.
+    path: screenshots/app-bar-and-view-light.png
+  - description: Stateful One UI bottom navigation in the dark theme.
+    path: screenshots/bottom-navigation-dark.png
+  - description: Enabled and disabled One UI buttons in the light theme.
+    path: screenshots/buttons-light.png
+  - description: A One UI alert dialog with typed actions in the light theme.
+    path: screenshots/alert-dialog-light.png
+  - description: Continuous, discrete, and disabled One UI sliders in the dark theme.
+    path: screenshots/sliders-dark.png
 
 environment:
   sdk: ">=3.9.0 <4.0.0"

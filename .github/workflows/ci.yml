@@ -2,52 +2,126 @@ name: CI
 
 on:
   push:
+    branches:
+      - develop
+      - master
   pull_request:
+    branches:
+      - develop
+      - master
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   quality:
     name: Flutter ${{ matrix.flutter-version }}
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        flutter-version:
-          - 3.35.7
-          - 3.x
+        include:
+          - flutter-version: 3.35.7
+            enforce-example-lockfile: true
+            collect-coverage: false
+          - flutter-version: 3.x
+            enforce-example-lockfile: false
+            collect-coverage: true
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
+      - name: Check out repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           flutter-version: ${{ matrix.flutter-version }}
           channel: stable
           cache: true
-      - run: flutter pub get
-      - run: flutter pub get
+      - name: Resolve package dependencies
+        run: flutter pub get --no-example
+      - name: Verify the Flutter 3.35 example lockfile
+        if: matrix.enforce-example-lockfile
         working-directory: example
-      - run: dart format --output=none --set-exit-if-changed lib test example/lib example/test example/integration_test example/test_driver
-      - run: flutter analyze --fatal-infos --fatal-warnings
-      - run: flutter test
-      - run: flutter test
+        run: flutter pub get --enforce-lockfile
+      - name: Resolve example dependencies on latest stable
+        if: ${{ !matrix.enforce-example-lockfile }}
         working-directory: example
+        run: flutter pub get
+      - name: Check formatting
+        run: >-
+          dart format --output=none --set-exit-if-changed
+          lib test tool example/lib example/test example/integration_test
+          example/test_driver
+      - name: Analyze package
+        run: flutter analyze --fatal-infos --fatal-warnings
+      - name: Test package
+        if: ${{ !matrix.collect-coverage }}
+        run: flutter test
+      - name: Test package with coverage
+        if: matrix.collect-coverage
+        run: flutter test --coverage
+      - name: Enforce line coverage
+        if: matrix.collect-coverage
+        run: dart run tool/check_coverage.dart --minimum 85
+      - name: Test example
+        working-directory: example
+        run: flutter test
 
   web-catalog:
-    name: Web widget catalog
+    name: ${{ matrix.name }}
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Web widget catalog (Flutter 3.35.7)
+            flutter-version: 3.35.7
+            enforce-example-lockfile: true
+          - name: Web widget catalog
+            flutter-version: 3.x
+            enforce-example-lockfile: false
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
+      - name: Check out repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
+          flutter-version: ${{ matrix.flutter-version }}
           channel: stable
           cache: true
-      - run: flutter config --enable-web
-      - run: flutter pub get
+      - name: Enable Flutter web
+        run: flutter config --enable-web
+      - name: Resolve package dependencies
+        run: flutter pub get --no-example
+      - name: Verify the Flutter 3.35 example lockfile
+        if: matrix.enforce-example-lockfile
         working-directory: example
-      - run: npx @puppeteer/browsers install chromedriver@stable --path "$HOME/.cache/chromedriver"
+        run: flutter pub get --enforce-lockfile
+      - name: Resolve example dependencies on latest stable
+        if: ${{ !matrix.enforce-example-lockfile }}
+        working-directory: example
+        run: flutter pub get
+      - name: Install ChromeDriver
+        run: |
+          CHROME_VERSION="$(google-chrome --product-version)"
+          npx --yes @puppeteer/browsers@3.0.6 \
+            install "chromedriver@$CHROME_VERSION" \
+            --path "$HOME/.cache/chromedriver"
       - name: Run the catalog flow in Chrome
         working-directory: example
         run: |
           CHROMEDRIVER="$(find "$HOME/.cache/chromedriver" -type f -name chromedriver | head -n 1)"
+          test -n "$CHROMEDRIVER"
           "$CHROMEDRIVER" --port=4444 &
           CHROMEDRIVER_PID=$!
           trap 'kill "$CHROMEDRIVER_PID" 2>/dev/null || true' EXIT
@@ -65,3 +139,20 @@ jobs:
             --browser-name=chrome \
             --release \
             --no-pub
+
+  ci-gate:
+    name: CI Gate
+    if: ${{ always() }}
+    needs:
+      - quality
+      - web-catalog
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require all CI jobs to pass
+        env:
+          QUALITY_RESULT: ${{ needs.quality.result }}
+          WEB_CATALOG_RESULT: ${{ needs.web-catalog.result }}
+        run: |
+          test "$QUALITY_RESULT" = "success"
+          test "$WEB_CATALOG_RESULT" = "success"

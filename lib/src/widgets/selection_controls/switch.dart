@@ -248,7 +248,9 @@ class _OneUISwitchState extends State<OneUISwitch>
     with TickerProviderStateMixin, ToggleableStateMixin {
   Size _getSwitchSize(ThemeData theme) {
     final MaterialTapTargetSize effectiveMaterialTapTargetSize =
-        theme.switchTheme.materialTapTargetSize ?? theme.materialTapTargetSize;
+        widget.materialTapTargetSize ??
+        theme.switchTheme.materialTapTargetSize ??
+        theme.materialTapTargetSize;
     switch (effectiveMaterialTapTargetSize) {
       case MaterialTapTargetSize.padded:
         return const Size(_kSwitchWidth, _kSwitchHeight);
@@ -695,6 +697,7 @@ class _SwitchPainter extends ToggleablePainter {
 
   bool? _cachedValue;
   Color? _cachedThumbColor;
+  Color? _cachedThumbBorderColor;
   ImageProvider? _cachedThumbImage;
   ImageErrorListener? _cachedThumbErrorListener;
   BoxPainter? _cachedThumbPainter;
@@ -752,7 +755,7 @@ class _SwitchPainter extends ToggleablePainter {
     )!;
     final Color thumbBorderColor = value
         ? activeThumbBorderColor
-        : inactiveTrackBorderColor;
+        : inactiveThumbBorderColor;
 
     // Blend the thumb color against a `surfaceColor` background in case the
 
@@ -808,12 +811,15 @@ class _SwitchPainter extends ToggleablePainter {
       if (_cachedThumbPainter == null ||
           value != _cachedValue ||
           thumbColor != _cachedThumbColor ||
+          thumbBorderColor != _cachedThumbBorderColor ||
           thumbImage != _cachedThumbImage ||
           thumbErrorListener != _cachedThumbErrorListener) {
         _cachedValue = value;
         _cachedThumbColor = thumbColor;
+        _cachedThumbBorderColor = thumbBorderColor;
         _cachedThumbImage = thumbImage;
         _cachedThumbErrorListener = thumbErrorListener;
+        _cachedThumbPainter?.dispose();
         _cachedThumbPainter = _createDefaultThumbDecoration(
           thumbColor,
           thumbBorderColor,
@@ -834,5 +840,12 @@ class _SwitchPainter extends ToggleablePainter {
     } finally {
       _isPainting = false;
     }
+  }
+
+  @override
+  void dispose() {
+    _cachedThumbPainter?.dispose();
+    _cachedThumbPainter = null;
+    super.dispose();
   }
 }

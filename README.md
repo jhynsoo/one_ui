@@ -3,6 +3,16 @@
 This package provides an unofficial implementation of Samsung One UI for
 [Flutter](https://flutter.dev).
 
+[Explore the live widget catalog](https://jhynsoo.github.io/one_ui/).
+
+| App Bar & View | Bottom Navigation |
+| --- | --- |
+| ![One UI app bar and expandable view in the light theme](https://raw.githubusercontent.com/jhynsoo/one_ui/master/screenshots/app-bar-and-view-light.png) | ![One UI bottom navigation in the dark theme](https://raw.githubusercontent.com/jhynsoo/one_ui/master/screenshots/bottom-navigation-dark.png) |
+| Buttons | Alert Dialog |
+| ![One UI buttons in the light theme](https://raw.githubusercontent.com/jhynsoo/one_ui/master/screenshots/buttons-light.png) | ![One UI alert dialog in the light theme](https://raw.githubusercontent.com/jhynsoo/one_ui/master/screenshots/alert-dialog-light.png) |
+
+![One UI sliders in the dark theme](https://raw.githubusercontent.com/jhynsoo/one_ui/master/screenshots/sliders-dark.png)
+
 ## Requirements
 
 - Flutter 3.35 or later
@@ -14,7 +24,7 @@ Add `one_ui` to your application:
 
 ```yaml
 dependencies:
-  one_ui: ^0.4.0
+  one_ui: ^0.4.1
 ```
 
 Import the public library:
@@ -30,6 +40,22 @@ effects. Run it with:
 cd example
 flutter run
 ```
+
+## Development checks
+
+Run the same package checks used by CI:
+
+```shell
+flutter pub get --no-example
+flutter analyze --fatal-infos --fatal-warnings
+flutter test --coverage
+dart run tool/check_coverage.dart --minimum 85
+dart run tool/check_release.dart --expected-version 0.4.1
+```
+
+The example lockfile is generated with the minimum supported Flutter release.
+Validate it from `example/` with `flutter pub get --enforce-lockfile` when using
+Flutter 3.35.7.
 
 ## Resources
 

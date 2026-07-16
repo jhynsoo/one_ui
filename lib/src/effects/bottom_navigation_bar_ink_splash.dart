@@ -7,6 +7,7 @@ const Duration _kSplashFadeDuration = kRadialReactionDuration;
 const Duration _kReverseSplashFadeDuration = Duration(milliseconds: 350);
 
 const double _kSplashConfirmedVelocity = 1.0; // logical pixels per millisecond
+const double _kSplashHeight = 36.0;
 
 RectCallback? _getClipCallback(
   RenderBox referenceBox,
@@ -146,6 +147,10 @@ class OneUIBottomNavigationBarSplash extends InteractiveInkFeature {
   void paintFeature(Canvas canvas, Matrix4 transform) {
     final Paint paint = Paint()..color = color.withAlpha(_alpha.value);
     Offset center = referenceBox.size.center(Offset.zero);
+    final Size splashSize = Size(
+      _targetSize.width,
+      math.min(_targetSize.height, _kSplashHeight),
+    );
 
     paintInkRRect(
       canvas: canvas,
@@ -154,7 +159,7 @@ class OneUIBottomNavigationBarSplash extends InteractiveInkFeature {
       center: center,
       scale: _scale.value,
       textDirection: _textDirection,
-      size: _targetSize,
+      size: splashSize,
       customBorder: _customBorder,
       borderRadius: _borderRadius,
       clipCallback: _clipCallback,

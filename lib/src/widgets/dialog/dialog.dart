@@ -106,7 +106,19 @@ class OneUIDialog extends StatelessWidget {
     this.shape,
     this.useOneUITheme = true,
     this.child,
-  });
+  }) : _semanticsRole = SemanticsRole.dialog;
+
+  const OneUIDialog._alert({
+    this.backgroundColor,
+    this.insetPadding = _defaultInsetPadding,
+    this.clipBehavior = Clip.none,
+    this.shape,
+    this.useOneUITheme = true,
+    this.child,
+  }) : elevation = null,
+       insetAnimationDuration = const Duration(milliseconds: 100),
+       insetAnimationCurve = Curves.decelerate,
+       _semanticsRole = SemanticsRole.alertDialog;
 
   /// {@template oneui.dialog.backgroundColor}
   /// The background color of the surface of this [OneUIDialog].
@@ -186,6 +198,8 @@ class OneUIDialog extends StatelessWidget {
   /// {@macro flutter.widgets.ProxyWidget.child}
   final Widget? child;
 
+  final SemanticsRole _semanticsRole;
+
   static const RoundedRectangleBorder _defaultDialogShape =
       RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(24.0)),
@@ -211,39 +225,42 @@ class OneUIDialog extends StatelessWidget {
       minWidth: mediaQuery.size.width * constraintsFactor,
     );
 
-    return AnimatedPadding(
-      padding: effectivePadding,
-      duration: insetAnimationDuration,
-      curve: insetAnimationCurve,
-      child: MediaQuery.removeViewInsets(
-        removeLeft: true,
-        removeTop: true,
-        removeRight: true,
-        removeBottom: true,
-        context: context,
-        child: Align(
-          alignment: const Alignment(0.0, 0.95),
-          child: ConstrainedBox(
-            constraints: dialogConstraints,
-            child: Material(
-              color:
-                  backgroundColor ??
-                  (useOneUITheme
-                      ? isDark
-                            ? const Color(0xff252525)
-                            : const Color(0xfffcfcfc)
-                      : dialogTheme.backgroundColor ??
-                            Theme.of(context).colorScheme.surface),
-              elevation:
-                  elevation ?? dialogTheme.elevation ?? _defaultElevation,
-              shape:
-                  shape ??
-                  (useOneUITheme
-                      ? _defaultDialogShape
-                      : dialogTheme.shape ?? _defaultDialogShape),
-              type: MaterialType.card,
-              clipBehavior: clipBehavior,
-              child: child,
+    return Semantics(
+      role: _semanticsRole,
+      child: AnimatedPadding(
+        padding: effectivePadding,
+        duration: insetAnimationDuration,
+        curve: insetAnimationCurve,
+        child: MediaQuery.removeViewInsets(
+          removeLeft: true,
+          removeTop: true,
+          removeRight: true,
+          removeBottom: true,
+          context: context,
+          child: Align(
+            alignment: const Alignment(0.0, 0.95),
+            child: ConstrainedBox(
+              constraints: dialogConstraints,
+              child: Material(
+                color:
+                    backgroundColor ??
+                    (useOneUITheme
+                        ? isDark
+                              ? const Color(0xff252525)
+                              : const Color(0xfffcfcfc)
+                        : dialogTheme.backgroundColor ??
+                              Theme.of(context).colorScheme.surface),
+                elevation:
+                    elevation ?? dialogTheme.elevation ?? _defaultElevation,
+                shape:
+                    shape ??
+                    (useOneUITheme
+                        ? _defaultDialogShape
+                        : dialogTheme.shape ?? _defaultDialogShape),
+                type: MaterialType.card,
+                clipBehavior: clipBehavior,
+                child: child,
+              ),
             ),
           ),
         ),
@@ -573,7 +590,7 @@ class OneUIAlertDialog extends StatelessWidget {
       );
     }
 
-    return OneUIDialog(
+    return OneUIDialog._alert(
       backgroundColor: backgroundColor,
       insetPadding: insetPadding,
       clipBehavior: clipBehavior,

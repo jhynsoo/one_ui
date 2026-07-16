@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show PipelineOwner;
+import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:one_ui/one_ui.dart' as one_ui;
 
@@ -93,6 +95,46 @@ void main() {
       );
 
       expect(find.byType(OverflowBar), findsNothing);
+      expectNoFlutterException(tester);
+    });
+
+    testWidgets('uses distinct dialog and alert dialog semantics roles', (
+      WidgetTester tester,
+    ) async {
+      final SemanticsHandle semantics = tester.ensureSemantics();
+
+      await tester.pumpWidget(
+        const TestApp(
+          home: Scaffold(
+            body: one_ui.OneUIDialog(child: Text('General dialog')),
+          ),
+        ),
+      );
+
+      expect(
+        _semanticsDataWithRole(tester, SemanticsRole.dialog),
+        hasLength(1),
+      );
+      expect(
+        _semanticsDataWithRole(tester, SemanticsRole.alertDialog),
+        isEmpty,
+      );
+
+      await tester.pumpWidget(
+        const TestApp(
+          home: Scaffold(
+            body: one_ui.OneUIAlertDialog(title: Text('Alert dialog')),
+          ),
+        ),
+      );
+
+      expect(_semanticsDataWithRole(tester, SemanticsRole.dialog), isEmpty);
+      expect(
+        _semanticsDataWithRole(tester, SemanticsRole.alertDialog),
+        hasLength(1),
+      );
+
+      semantics.dispose();
       expectNoFlutterException(tester);
     });
   });
@@ -201,7 +243,83 @@ void main() {
       expect(find.text('raw:42'), findsOneWidget);
       expectNoFlutterException(tester);
     });
+
+    testWidgets('exposes menu and menu item semantics roles', (
+      WidgetTester tester,
+    ) async {
+      final SemanticsHandle semantics = tester.ensureSemantics();
+      await tester.pumpWidget(const TestApp(home: _PopupHarness()));
+
+      await tester.tap(find.byKey(const Key('custom-popup')));
+      await tester.pumpAndSettle();
+
+      final List<SemanticsData> menus = _semanticsDataWithRole(
+        tester,
+        SemanticsRole.menu,
+      );
+      final List<SemanticsData> menuItems = _semanticsDataWithRole(
+        tester,
+        SemanticsRole.menuItem,
+      );
+      expect(menus, hasLength(1));
+      expect(menus.single.flagsCollection.scopesRoute, isTrue);
+      expect(menus.single.flagsCollection.namesRoute, isTrue);
+      expect(menuItems, hasLength(2));
+
+      final SemanticsData disabledItem = menuItems.singleWhere(
+        (SemanticsData data) => data.label.contains('Unavailable'),
+      );
+      final SemanticsData enabledItem = menuItems.singleWhere(
+        (SemanticsData data) => data.label.contains('Choose me'),
+      );
+      expect(disabledItem.flagsCollection.isButton, isTrue);
+      expect(
+        disabledItem.flagsCollection.toStrings(),
+        contains('hasEnabledState'),
+      );
+      expect(
+        disabledItem.flagsCollection.toStrings(),
+        isNot(contains('isEnabled')),
+      );
+      expect(disabledItem.hasAction(SemanticsAction.tap), isFalse);
+      expect(enabledItem.flagsCollection.toStrings(), contains('isEnabled'));
+      expect(enabledItem.hasAction(SemanticsAction.tap), isTrue);
+
+      semantics.dispose();
+      expectNoFlutterException(tester);
+    });
   });
+}
+
+List<SemanticsData> _semanticsDataWithRole(
+  WidgetTester tester,
+  SemanticsRole role,
+) {
+  SemanticsNode? root;
+
+  void findSemanticsRoot(PipelineOwner owner) {
+    root ??= owner.semanticsOwner?.rootSemanticsNode;
+    if (root == null) {
+      owner.visitChildren(findSemanticsRoot);
+    }
+  }
+
+  findSemanticsRoot(tester.binding.rootPipelineOwner);
+  final List<SemanticsData> result = <SemanticsData>[];
+
+  void collect(SemanticsNode node) {
+    final SemanticsData data = node.getSemanticsData();
+    if (data.role == role) {
+      result.add(data);
+    }
+    node.visitChildren((SemanticsNode child) {
+      collect(child);
+      return true;
+    });
+  }
+
+  collect(root!);
+  return result;
 }
 
 class _DialogHarness extends StatefulWidget {

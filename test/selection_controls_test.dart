@@ -1,5 +1,6 @@
 import 'dart:ui' show PointerDeviceKind;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
@@ -64,6 +65,155 @@ void main() {
         matchesSemantics(hasEnabledState: true, hasToggledState: true),
       );
       semantics.dispose();
+      expectNoFlutterException(tester);
+    });
+
+    testWidgets('material tap target follows widget then switch theme', (
+      WidgetTester tester,
+    ) async {
+      Widget buildSwitch({
+        MaterialTapTargetSize? widgetTapTargetSize,
+        MaterialTapTargetSize? switchThemeTapTargetSize,
+        required MaterialTapTargetSize themeTapTargetSize,
+      }) {
+        return MaterialApp(
+          theme: ThemeData(
+            materialTapTargetSize: themeTapTargetSize,
+            switchTheme: SwitchThemeData(
+              materialTapTargetSize: switchThemeTapTargetSize,
+            ),
+          ),
+          home: Scaffold(
+            body: Center(
+              child: one_ui.OneUISwitch(
+                key: const Key('sized-switch'),
+                value: false,
+                materialTapTargetSize: widgetTapTargetSize,
+                onChanged: (_) {},
+              ),
+            ),
+          ),
+        );
+      }
+
+      await tester.pumpWidget(
+        buildSwitch(
+          switchThemeTapTargetSize: MaterialTapTargetSize.padded,
+          themeTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+      );
+      expect(
+        tester.getSize(find.byKey(const Key('sized-switch'))),
+        const Size(57, 48),
+      );
+
+      await tester.pumpWidget(
+        buildSwitch(
+          widgetTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          switchThemeTapTargetSize: MaterialTapTargetSize.padded,
+          themeTapTargetSize: MaterialTapTargetSize.padded,
+        ),
+      );
+      expect(
+        tester.getSize(find.byKey(const Key('sized-switch'))),
+        const Size(57, 40),
+      );
+
+      await tester.pumpWidget(
+        buildSwitch(
+          widgetTapTargetSize: MaterialTapTargetSize.padded,
+          switchThemeTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          themeTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+      );
+      expect(
+        tester.getSize(find.byKey(const Key('sized-switch'))),
+        const Size(57, 48),
+      );
+      expectNoFlutterException(tester);
+    });
+
+    testWidgets('inactive thumb border is distinct and refreshes on rebuild', (
+      WidgetTester tester,
+    ) async {
+      const Color trackBorderColor = Color(0xff00ff00);
+
+      Widget buildSwitch(Color thumbBorderColor) {
+        return MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: one_ui.OneUISwitch(
+                key: const Key('bordered-switch'),
+                value: false,
+                thumbColor: Colors.white,
+                thumbBorderColor: WidgetStatePropertyAll<Color?>(
+                  thumbBorderColor,
+                ),
+                trackColor: const WidgetStatePropertyAll<Color?>(
+                  Colors.transparent,
+                ),
+                trackBorderColor: const WidgetStatePropertyAll<Color?>(
+                  trackBorderColor,
+                ),
+                onChanged: (_) {},
+              ),
+            ),
+          ),
+        );
+      }
+
+      await tester.pumpWidget(buildSwitch(Colors.red));
+      final MaterialInkController material = Material.of(
+        tester.element(find.byKey(const Key('bordered-switch'))),
+      );
+      expect(
+        material,
+        paints
+          ..rrect(color: trackBorderColor, style: PaintingStyle.stroke)
+          ..rrect(color: Colors.transparent, style: PaintingStyle.fill)
+          ..circle(color: Colors.white, style: PaintingStyle.fill)
+          ..circle(color: Colors.red, style: PaintingStyle.stroke),
+      );
+
+      await tester.pumpWidget(buildSwitch(Colors.blue));
+      expect(
+        material,
+        paints
+          ..rrect(color: trackBorderColor, style: PaintingStyle.stroke)
+          ..rrect(color: Colors.transparent, style: PaintingStyle.fill)
+          ..circle(color: Colors.white, style: PaintingStyle.fill)
+          ..circle(color: Colors.blue, style: PaintingStyle.stroke),
+      );
+      expectNoFlutterException(tester);
+    });
+
+    testWidgets('thumb image painter releases listeners when replaced', (
+      WidgetTester tester,
+    ) async {
+      final _TrackingImageProvider firstImage = _TrackingImageProvider();
+      final _TrackingImageProvider secondImage = _TrackingImageProvider();
+
+      Widget buildSwitch(ImageProvider image) {
+        return MaterialApp(
+          home: Scaffold(
+            body: one_ui.OneUISwitch(
+              value: false,
+              inactiveThumbImage: image,
+              onChanged: (_) {},
+            ),
+          ),
+        );
+      }
+
+      await tester.pumpWidget(buildSwitch(firstImage));
+      expect(firstImage.listenerCount, 1);
+
+      await tester.pumpWidget(buildSwitch(secondImage));
+      expect(firstImage.listenerCount, 0);
+      expect(secondImage.listenerCount, 1);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      expect(secondImage.listenerCount, 0);
       expectNoFlutterException(tester);
     });
   });
@@ -319,6 +469,135 @@ void main() {
       semantics.dispose();
       expectNoFlutterException(tester);
     });
+
+    testWidgets('thumb radii update on the existing render object', (
+      WidgetTester tester,
+    ) async {
+      Widget buildSlider({
+        required double thumbRadius,
+        required double onClickThumbRadius,
+      }) {
+        return TestApp(
+          home: Scaffold(
+            body: Center(
+              child: SliderTheme(
+                data: SliderThemeData(
+                  overlayShape: SliderComponentShape.noOverlay,
+                ),
+                child: one_ui.OneUISlider(
+                  key: const Key('radius-slider'),
+                  value: 0.5,
+                  thumbRadius: thumbRadius,
+                  onClickThumbRadius: onClickThumbRadius,
+                  onChanged: (_) {},
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+
+      await tester.pumpWidget(
+        buildSlider(thumbRadius: 10, onClickThumbRadius: 13),
+      );
+      final RenderObject renderObject = tester.renderObject(
+        find.byKey(const Key('radius-slider')),
+      );
+      final MaterialInkController material = Material.of(
+        tester.element(find.byKey(const Key('radius-slider'))),
+      );
+      expect(material, paints..circle(radius: 10));
+
+      await tester.pumpWidget(
+        buildSlider(thumbRadius: 22, onClickThumbRadius: 25),
+      );
+      expect(
+        tester.renderObject(find.byKey(const Key('radius-slider'))),
+        same(renderObject),
+      );
+      expect(material, paints..circle(radius: 22));
+
+      final TestGesture gesture = await tester.startGesture(
+        tester.getCenter(find.byKey(const Key('radius-slider'))),
+      );
+      await tester.pumpAndSettle();
+      expect(material, paints..circle(radius: 25));
+      await gesture.up();
+      await tester.pumpAndSettle();
+      expectNoFlutterException(tester);
+    });
+
+    testWidgets('value indicator text style updates with slider theme', (
+      WidgetTester tester,
+    ) async {
+      final _RecordingValueIndicatorShape indicatorShape =
+          _RecordingValueIndicatorShape();
+
+      Widget buildSlider(Color labelColor) {
+        return TestApp(
+          home: Scaffold(
+            body: Center(
+              child: SliderTheme(
+                data: SliderThemeData(
+                  showValueIndicator: ShowValueIndicator.alwaysVisible,
+                  valueIndicatorShape: indicatorShape,
+                  valueIndicatorTextStyle: TextStyle(color: labelColor),
+                ),
+                child: one_ui.OneUISlider(
+                  key: const Key('themed-slider'),
+                  value: 0.5,
+                  label: 'Value',
+                  onChanged: (_) {},
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+
+      await tester.pumpWidget(buildSlider(Colors.red));
+      await tester.pumpAndSettle();
+      expect(indicatorShape.labelColor, Colors.red);
+
+      final RenderObject renderObject = tester.renderObject(
+        find.byKey(const Key('themed-slider')),
+      );
+      await tester.pumpWidget(buildSlider(Colors.blue));
+      await tester.pumpAndSettle();
+      expect(
+        tester.renderObject(find.byKey(const Key('themed-slider'))),
+        same(renderObject),
+      );
+      expect(indicatorShape.labelColor, Colors.blue);
+      expectNoFlutterException(tester);
+    });
+
+    testWidgets('active drag can be unmounted without callbacks or errors', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        const TestApp(
+          home: _SliderHarness(
+            initialValue: 0.5,
+            label: 'Dragging',
+            showValueIndicator: ShowValueIndicator.onDrag,
+          ),
+        ),
+      );
+      final TestGesture gesture = await tester.startGesture(
+        tester.getCenter(find.byKey(const Key('slider'))),
+      );
+      await gesture.moveBy(const Offset(24, 0));
+      await tester.pump(const Duration(milliseconds: 120));
+      expect(find.byType(CompositedTransformFollower), findsOneWidget);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await gesture.up();
+      await tester.pump();
+
+      expect(find.byType(CompositedTransformFollower), findsNothing);
+      expectNoFlutterException(tester);
+    });
   });
 }
 
@@ -483,5 +762,68 @@ class _RecordingSliderOverlayShape extends SliderComponentShape {
     required Size sizeWithOverflow,
   }) {
     activationValue = activationAnimation.value;
+  }
+}
+
+class _RecordingValueIndicatorShape extends SliderComponentShape {
+  Color? labelColor;
+
+  @override
+  Size getPreferredSize(bool isEnabled, bool isDiscrete) => const Size(40, 32);
+
+  @override
+  void paint(
+    PaintingContext context,
+    Offset center, {
+    required Animation<double> activationAnimation,
+    required Animation<double> enableAnimation,
+    required bool isDiscrete,
+    required TextPainter labelPainter,
+    required RenderBox parentBox,
+    required SliderThemeData sliderTheme,
+    required TextDirection textDirection,
+    required double value,
+    required double textScaleFactor,
+    required Size sizeWithOverflow,
+  }) {
+    labelColor = labelPainter.text?.style?.color;
+  }
+}
+
+class _TrackingImageProvider extends ImageProvider<_TrackingImageProvider> {
+  final _TrackingImageStreamCompleter _completer =
+      _TrackingImageStreamCompleter();
+
+  int get listenerCount => _completer.listenerCount;
+
+  @override
+  Future<_TrackingImageProvider> obtainKey(ImageConfiguration configuration) {
+    return SynchronousFuture<_TrackingImageProvider>(this);
+  }
+
+  @override
+  void resolveStreamForKey(
+    ImageConfiguration configuration,
+    ImageStream stream,
+    _TrackingImageProvider key,
+    ImageErrorListener handleError,
+  ) {
+    stream.setCompleter(_completer);
+  }
+}
+
+class _TrackingImageStreamCompleter extends ImageStreamCompleter {
+  int listenerCount = 0;
+
+  @override
+  void addListener(ImageStreamListener listener) {
+    super.addListener(listener);
+    listenerCount += 1;
+  }
+
+  @override
+  void removeListener(ImageStreamListener listener) {
+    super.removeListener(listener);
+    listenerCount -= 1;
   }
 }

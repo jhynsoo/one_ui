@@ -26,6 +26,15 @@ void main() {
     debugPrint('Catalog integration: home settled');
     _expectNoException(tester);
 
+    await tester.tap(find.byKey(CatalogKeys.themeMode));
+    await _pumpFrames(tester);
+    expect(find.textContaining('Theme: dark'), findsOneWidget);
+    _expectNoException(tester);
+    await tester.tap(find.byKey(CatalogKeys.themeMode));
+    await _pumpFrames(tester);
+    expect(find.textContaining('Theme: light'), findsOneWidget);
+    _expectNoException(tester);
+
     await tester.tap(find.byKey(CatalogKeys.materialYouMode));
     await _pumpFrames(tester);
     expect(

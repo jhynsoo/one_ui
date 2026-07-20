@@ -4,14 +4,12 @@ import 'dart:io';
 import 'dart:typed_data';
 
 const int _maximumScreenshotBytes = 4 * 1024 * 1024;
-const int _screenshotWidth = 824;
-const int _screenshotHeight = 1830;
-const List<String> _expectedScreenshotNames = <String>[
-  'app-bar-and-view-light.png',
-  'bottom-navigation-dark.png',
-  'buttons-light.png',
-  'alert-dialog-light.png',
-  'sliders-dark.png',
+const List<({String name, int width, int height})> _expectedScreenshots = [
+  (name: 'app-bar-and-view-light.png', width: 824, height: 1200),
+  (name: 'bottom-navigation-dark.png', width: 824, height: 170),
+  (name: 'buttons-light.png', width: 824, height: 530),
+  (name: 'alert-dialog-light.png', width: 696, height: 460),
+  (name: 'sliders-dark.png', width: 824, height: 540),
 ];
 
 Future<void> main(List<String> arguments) async {
@@ -266,9 +264,9 @@ void _validateScreenshots(
   String readme,
   List<_Screenshot> screenshots,
 ) {
-  if (screenshots.length != _expectedScreenshotNames.length) {
+  if (screenshots.length != _expectedScreenshots.length) {
     throw _ReleaseFailure(
-      'Expected ${_expectedScreenshotNames.length} screenshots, '
+      'Expected ${_expectedScreenshots.length} screenshots, '
       'found ${screenshots.length}.',
     );
   }
@@ -287,7 +285,9 @@ void _validateScreenshots(
       throw _ReleaseFailure('Duplicate screenshot path: ${screenshot.path}');
     }
 
-    final String expectedName = _expectedScreenshotNames[index];
+    final ({String name, int width, int height}) expected =
+        _expectedScreenshots[index];
+    final String expectedName = expected.name;
     final String actualName = pathSegments.last;
     _requireEqual(
       actual: actualName,
@@ -319,11 +319,21 @@ void _validateScreenshots(
     if (file.lengthSync() > _maximumScreenshotBytes) {
       throw _ReleaseFailure('Screenshot exceeds 4 MiB: ${screenshot.path}');
     }
-    _validatePng(file, screenshot.path);
+    _validatePng(
+      file,
+      screenshot.path,
+      expectedWidth: expected.width,
+      expectedHeight: expected.height,
+    );
   }
 }
 
-void _validatePng(File file, String displayPath) {
+void _validatePng(
+  File file,
+  String displayPath, {
+  required int expectedWidth,
+  required int expectedHeight,
+}) {
   final Uint8List bytes = file.readAsBytesSync();
   const List<int> signature = <int>[137, 80, 78, 71, 13, 10, 26, 10];
   if (bytes.length < 24 ||
@@ -335,9 +345,9 @@ void _validatePng(File file, String displayPath) {
   final ByteData data = ByteData.sublistView(bytes);
   final int width = data.getUint32(16, Endian.big);
   final int height = data.getUint32(20, Endian.big);
-  if (width != _screenshotWidth || height != _screenshotHeight) {
+  if (width != expectedWidth || height != expectedHeight) {
     throw _ReleaseFailure(
-      'Screenshot must be ${_screenshotWidth}x$_screenshotHeight pixels, '
+      'Screenshot must be ${expectedWidth}x$expectedHeight pixels, '
       'found ${width}x$height: $displayPath',
     );
   }

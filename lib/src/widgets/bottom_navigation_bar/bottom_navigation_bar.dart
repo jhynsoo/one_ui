@@ -143,15 +143,20 @@ class _OneUIBottomNavigationTile extends StatelessWidget {
               containedInkWell: true,
               borderRadius: const BorderRadius.all(Radius.circular(18)),
               child: SizedBox(
-                height: 36.0,
+                height: 48.0,
                 child: Center(
-                  child: _Label(
-                    selected: selected,
-                    colorTween: colorTween!,
-                    animation: animation,
-                    item: item,
-                    selectedLabelStyle: selectedLabelStyle,
-                    unselectedLabelStyle: unselectedLabelStyle,
+                  child: SizedBox(
+                    height: 36.0,
+                    child: Center(
+                      child: _Label(
+                        selected: selected,
+                        colorTween: colorTween!,
+                        animation: animation,
+                        item: item,
+                        selectedLabelStyle: selectedLabelStyle,
+                        unselectedLabelStyle: unselectedLabelStyle,
+                      ),
+                    ),
                   ),
                 ),
               ),

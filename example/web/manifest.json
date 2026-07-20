@@ -1,11 +1,11 @@
 {
-    "name": "example",
-    "short_name": "example",
+    "name": "One UI Widget Catalog",
+    "short_name": "One UI Catalog",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#F7F7F7",
+    "theme_color": "#0381FE",
+    "description": "A live catalog of one_ui widgets for Flutter.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

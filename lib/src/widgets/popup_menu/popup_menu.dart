@@ -181,6 +181,7 @@ class OneUIPopupMenuItemState<T, W extends OneUIPopupMenuItem<T>>
       child: Semantics(
         enabled: widget.enabled,
         button: true,
+        role: SemanticsRole.menuItem,
         child: InkWell(
           onTap: widget.enabled ? handleTap : null,
           canRequestFocus: widget.enabled,
@@ -289,6 +290,7 @@ class _PopupMenu<T> extends StatelessWidget {
           scopesRoute: true,
           namesRoute: true,
           explicitChildNodes: true,
+          role: SemanticsRole.menu,
           label: semanticLabel,
           child: SingleChildScrollView(child: ListBody(children: children)),
         ),

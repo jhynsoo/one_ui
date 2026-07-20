@@ -254,6 +254,7 @@ class _SliderState extends State<OneUISlider> with TickerProviderStateMixin {
   bool get _enabled => widget.onChanged != null;
   // Value Indicator Animation that appears on the Overlay.
   PaintValueIndicator? paintValueIndicator;
+  _RenderValueIndicator? _valueIndicatorRenderObject;
 
   @override
   void initState() {
@@ -677,6 +678,8 @@ class _SliderRenderObjectWidget extends LeafRenderObjectWidget {
       // setter dependent on the `divisions`.
       ..divisions = divisions
       ..value = value
+      ..thumbRadius = thumbRadius
+      ..onClickThumbRadius = onClickThumbRadius
       ..label = label
       ..sliderTheme = sliderTheme
       ..textScaleFactor = textScaleFactor
@@ -790,10 +793,10 @@ class _RenderSlider extends RenderBox with RelayoutWhenSystemFontsChangeMixin {
   double get _minPreferredTrackHeight => _sliderTheme.trackHeight!;
 
   final _SliderState _state;
-  late Animation<double> _overlayAnimation;
-  late Animation<double> _valueIndicatorAnimation;
-  late Animation<double> _enableAnimation;
-  late Animation<double> _clickAnimation;
+  late CurvedAnimation _overlayAnimation;
+  late CurvedAnimation _valueIndicatorAnimation;
+  late CurvedAnimation _enableAnimation;
+  late CurvedAnimation _clickAnimation;
   final TextPainter _labelPainter = TextPainter();
   late HorizontalDragGestureRecognizer _drag;
   late TapGestureRecognizer _tap;
@@ -846,6 +849,9 @@ class _RenderSlider extends RenderBox with RelayoutWhenSystemFontsChangeMixin {
   double get thumbRadius => _thumbRadius;
   double _thumbRadius;
   set thumbRadius(double newValue) {
+    if (newValue == _thumbRadius) {
+      return;
+    }
     _thumbRadius = newValue;
     markNeedsPaint();
   }
@@ -853,6 +859,9 @@ class _RenderSlider extends RenderBox with RelayoutWhenSystemFontsChangeMixin {
   double get onClickThumbRadius => _onClickThumbRadius;
   double _onClickThumbRadius;
   set onClickThumbRadius(double newValue) {
+    if (newValue == _onClickThumbRadius) {
+      return;
+    }
     _onClickThumbRadius = newValue;
     markNeedsPaint();
   }
@@ -901,7 +910,7 @@ class _RenderSlider extends RenderBox with RelayoutWhenSystemFontsChangeMixin {
       return;
     }
     _sliderTheme = value;
-    markNeedsPaint();
+    _updateLabelPainter();
   }
 
   double get textScaleFactor => _textScaleFactor;
@@ -1056,6 +1065,8 @@ class _RenderSlider extends RenderBox with RelayoutWhenSystemFontsChangeMixin {
     // bidi algorithm might line up the glyphs differently which can result in
     // different ligatures, different shapes, etc. So we always markNeedsLayout.
     markNeedsLayout();
+    markNeedsPaint();
+    _state._valueIndicatorRenderObject?.markNeedsPaint();
   }
 
   @override
@@ -1083,6 +1094,18 @@ class _RenderSlider extends RenderBox with RelayoutWhenSystemFontsChangeMixin {
     _clickAnimation.removeListener(markNeedsPaint);
     _state.positionController.removeListener(markNeedsPaint);
     super.detach();
+  }
+
+  @override
+  void dispose() {
+    _drag.dispose();
+    _tap.dispose();
+    _labelPainter.dispose();
+    _overlayAnimation.dispose();
+    _valueIndicatorAnimation.dispose();
+    _enableAnimation.dispose();
+    _clickAnimation.dispose();
+    super.dispose();
   }
 
   double _getValueFromVisualPosition(double visualPosition) {
@@ -1524,20 +1547,33 @@ class _ValueIndicatorRenderObjectWidget extends LeafRenderObjectWidget {
     BuildContext context,
     _RenderValueIndicator renderObject,
   ) {
-    renderObject._state = state;
+    renderObject.state = state;
   }
 }
 
 class _RenderValueIndicator extends RenderBox
     with RelayoutWhenSystemFontsChangeMixin {
   _RenderValueIndicator({required _SliderState state}) : _state = state {
+    _state._valueIndicatorRenderObject = this;
     _valueIndicatorAnimation = CurvedAnimation(
       parent: _state.valueIndicatorController,
       curve: Curves.fastOutSlowIn,
     );
   }
-  late Animation<double> _valueIndicatorAnimation;
+  late CurvedAnimation _valueIndicatorAnimation;
   _SliderState _state;
+  set state(_SliderState value) {
+    if (identical(value, _state)) {
+      markNeedsPaint();
+      return;
+    }
+    if (identical(_state._valueIndicatorRenderObject, this)) {
+      _state._valueIndicatorRenderObject = null;
+    }
+    _state = value;
+    _state._valueIndicatorRenderObject = this;
+    markNeedsPaint();
+  }
 
   @override
   bool get sizedByParent => true;
@@ -1554,6 +1590,15 @@ class _RenderValueIndicator extends RenderBox
     _valueIndicatorAnimation.removeListener(markNeedsPaint);
     _state.positionController.removeListener(markNeedsPaint);
     super.detach();
+  }
+
+  @override
+  void dispose() {
+    if (identical(_state._valueIndicatorRenderObject, this)) {
+      _state._valueIndicatorRenderObject = null;
+    }
+    _valueIndicatorAnimation.dispose();
+    super.dispose();
   }
 
   @override

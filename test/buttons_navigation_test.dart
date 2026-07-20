@@ -248,6 +248,53 @@ void main() {
       expectNoFlutterException(tester);
     });
 
+    testWidgets(
+      'bottom navigation keeps a 48 pixel target around its 36 pixel visual',
+      (WidgetTester tester) async {
+        int taps = 0;
+
+        await tester.pumpWidget(
+          TestApp(
+            home: Scaffold(
+              bottomNavigationBar: one_ui.OneUIBottomNavigationBar(
+                onTap: (int index) => taps += 1,
+                items: const <one_ui.OneUIBottomNavigationBarItem>[
+                  one_ui.OneUIBottomNavigationBarItem(label: 'Home'),
+                  one_ui.OneUIBottomNavigationBarItem(label: 'Library'),
+                ],
+              ),
+            ),
+          ),
+        );
+
+        final Finder homeInkResponse = find.ancestor(
+          of: find.text('Home'),
+          matching: find.byType(InkResponse),
+        );
+        final Finder visual = find.descendant(
+          of: homeInkResponse,
+          matching: find.byWidgetPredicate(
+            (Widget widget) => widget is SizedBox && widget.height == 36.0,
+          ),
+        );
+
+        expect(homeInkResponse, findsOneWidget);
+        expect(visual, findsOneWidget);
+        final Rect targetRect = tester.getRect(homeInkResponse);
+        final Rect visualRect = tester.getRect(visual);
+        expect(targetRect.height, 48.0);
+        expect(visualRect.height, 36.0);
+
+        final Offset edgeTap = Offset(targetRect.center.dx, targetRect.top + 2);
+        expect(edgeTap.dy, lessThan(visualRect.top));
+        await tester.tapAt(edgeTap);
+        await tester.pump();
+
+        expect(taps, 1);
+        expectNoFlutterException(tester);
+      },
+    );
+
     testWidgets('bottom navigation applies its background color', (
       WidgetTester tester,
     ) async {

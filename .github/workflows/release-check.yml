@@ -1,0 +1,89 @@
+name: Release validation
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate 0.4.1 release
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository and tags
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: 3.35.7
+          channel: stable
+          cache: true
+      - name: Resolve package dependencies
+        run: flutter pub get --no-example
+      - name: Validate release metadata
+        run: >-
+          dart run tool/check_release.dart
+          --expected-version 0.4.1 --require-unpublished
+      - name: Validate API documentation links
+        run: dart doc --validate-links
+      - name: Validate package publication
+        run: dart pub publish --dry-run
+      - name: Verify example lockfile
+        working-directory: example
+        run: flutter pub get --enforce-lockfile
+
+  android:
+    name: Build Android release
+    if: github.ref == 'refs/heads/master'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: 3.35.7
+          channel: stable
+          cache: true
+      - name: Resolve package dependencies
+        run: flutter pub get --no-example
+      - name: Verify example lockfile
+        working-directory: example
+        run: flutter pub get --enforce-lockfile
+      - name: Configure Android release plugins
+        working-directory: example
+        run: flutter build apk --release --config-only
+      - name: Build release APK
+        working-directory: example
+        run: flutter build apk --release --no-pub
+
+  ios:
+    name: Build iOS simulator app
+    if: github.ref == 'refs/heads/master'
+    needs: validate
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: 3.35.7
+          channel: stable
+          cache: true
+      - name: Resolve package dependencies
+        run: flutter pub get --no-example
+      - name: Verify example lockfile
+        working-directory: example
+        run: flutter pub get --enforce-lockfile
+      - name: Build simulator app
+        working-directory: example
+        run: flutter build ios --simulator --no-pub

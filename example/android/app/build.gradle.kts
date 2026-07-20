@@ -8,7 +8,8 @@ plugins {
 android {
     namespace = "com.example.example"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    // dynamic_color 1.8.1 requires NDK 28.2 across supported Flutter SDKs.
+    ndkVersion = "28.2.13676358"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

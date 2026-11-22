@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:one_ui/one_ui.dart';
+import 'package:one_ui/src/material.dart';
 
 const Duration _kMenuDuration = Duration(milliseconds: 200);
 const Duration _kMenuReverseDuration = Duration(milliseconds: 150);

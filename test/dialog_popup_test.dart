@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show PipelineOwner;
 import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:one_ui/one_ui.dart' as one_ui;
+import 'package:one_ui/src/material.dart';
 
 import 'test_app.dart';
 

@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:one_ui/one_ui.dart';
+import 'package:one_ui/src/material.dart';
 
 void main() {
   group('OneUIColorScheme', () {

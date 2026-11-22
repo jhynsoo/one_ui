@@ -1,6 +1,6 @@
 name: one_ui
 description: Flutter widgets implementing Samsung One UI based on the official design guidelines.
-version: 0.4.1
+version: 0.4.2
 homepage: https://github.com/jhynsoo/one_ui
 repository: https://github.com/jhynsoo/one_ui
 issue_tracker: https://github.com/jhynsoo/one_ui/issues

@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:flutter/material.dart';
+import 'package:one_ui/src/material.dart';
 import 'package:one_ui/src/widgets/buttons/flat_button.dart';
 
 const EdgeInsets _defaultInsetPadding = EdgeInsets.symmetric(

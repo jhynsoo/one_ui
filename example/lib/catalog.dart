@@ -1,6 +1,6 @@
 import 'package:dynamic_color/dynamic_color.dart';
-import 'package:flutter/material.dart';
 import 'package:one_ui/one_ui.dart' as one_ui;
+import 'package:one_ui_example/src/material.dart';
 
 /// Stable identifiers for the catalog's eight sections.
 abstract final class CatalogSectionIds {

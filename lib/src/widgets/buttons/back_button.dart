@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:one_ui/src/material.dart';
 import 'package:one_ui/src/widgets/buttons/icon_button.dart';
 
 class OneUIBackButton extends StatelessWidget {

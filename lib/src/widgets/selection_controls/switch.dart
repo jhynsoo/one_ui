@@ -1,5 +1,5 @@
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
+import 'package:one_ui/src/material.dart';
 
 import '../../theme/theme.dart';
 

@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:one_ui/src/effects/bottom_navigation_bar_ink_splash.dart';
+import 'package:one_ui/src/material.dart';
 import 'package:one_ui/src/widgets/bottom_navigation_bar/bottom_navigation_bar_item.dart';
 import 'package:vector_math/vector_math_64.dart' show Vector3;
 

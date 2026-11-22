@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:one_ui/src/effects/ink_ripple.dart';
+import 'package:one_ui/src/material.dart';
 import 'package:one_ui/src/theme/theme.dart';
 
 class OneUIFlatButton extends ButtonStyleButton {

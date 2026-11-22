@@ -1,3 +1,9 @@
+## 0.4.2
+
+- Fix pub.dev analysis errors caused by deprecated Material imports on
+  Flutter 3.50. The public API continues to accept Flutter SDK Material
+  types and supports Flutter 3.35 and Dart 3.9.
+
 ## 0.4.1
 
 - Synchronize slider render-object radii and refresh value-indicator text when

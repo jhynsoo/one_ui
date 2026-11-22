@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:one_ui/src/material.dart';
 import 'package:one_ui/src/physics/scroll_physics.dart';
 import 'package:one_ui/src/widgets/appbar/appbar.dart';
 

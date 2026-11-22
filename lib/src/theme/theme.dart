@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:one_ui/src/material.dart';
 
 /// Selects how One UI widgets resolve their semantic colors.
 enum OneUIColorMode {

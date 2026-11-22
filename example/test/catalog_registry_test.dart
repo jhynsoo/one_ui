@@ -1,9 +1,9 @@
 import 'package:dynamic_color/samples.dart';
 import 'package:dynamic_color/test_utils.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:one_ui/one_ui.dart' as one_ui;
 import 'package:one_ui_example/catalog.dart';
+import 'package:one_ui_example/src/material.dart';
 
 void main() {
   setUp(DynamicColorTestingUtils.setMockDynamicColors);

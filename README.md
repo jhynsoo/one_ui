@@ -24,7 +24,7 @@ Add `one_ui` to your application:
 
 ```yaml
 dependencies:
-  one_ui: ^0.4.1
+  one_ui: ^0.4.2
 ```
 
 Import the public library:
@@ -50,7 +50,7 @@ flutter pub get --no-example
 flutter analyze --fatal-infos --fatal-warnings
 flutter test --coverage
 dart run tool/check_coverage.dart --minimum 85
-dart run tool/check_release.dart --expected-version 0.4.1
+dart run tool/check_release.dart --expected-version 0.4.2
 ```
 
 The example lockfile is generated with the minimum supported Flutter release.

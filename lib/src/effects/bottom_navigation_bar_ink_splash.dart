@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
+import 'package:one_ui/src/material.dart';
 
 const Duration _kUnconfirmedSplashDuration = kThemeAnimationDuration;
 const Duration _kSplashFadeDuration = kRadialReactionDuration;
